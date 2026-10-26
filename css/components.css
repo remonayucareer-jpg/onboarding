@@ -1,0 +1,1405 @@
+/* 通用组件：文字层级 / 内容面 / 按钮 / 选项 / 说明块 / 列表 / 时间线 / 折叠区 / 提示条
+ *
+ * 这一层的规则（做减法为主，改样式前先读）：
+ *  - 内容面（.card 等）默认「白底 + 留白」，不加边框不加阴影；区块之间靠 --page-gap 分开。
+ *  - 只有「状态块」和「真的需要独立区域」的块才给底色/边框（.card--ok / .card--warn / .badge--warn）。
+ *  - 深蓝只做结构线、结论线、选中态；橙色只做主要操作；绿/琥珀只做业务状态。
+ *  - 要强调一句话，用字号 / 字重 / 左侧 2~3px 竖线，不要用彩色底 + 圆角 + 阴影堆三层。
+ */
+
+/* ---------- 文字层级 ---------- */
+
+/* 页面标题：深灰近黑、600，不刷蓝也不刷橙 */
+.page-title {
+  font-size: var(--fs-title);
+  line-height: 1.34;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.page-subtitle {
+  margin-top: 8px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* 章节标签（第一章 · 认识产品价值）：深蓝 + 字距，唯一的「导航色」用法 */
+.chapter-intro__tag {
+  margin-bottom: 8px;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.14em;
+}
+
+/* 欢迎页 / 完成页的报头：只留一条细线收尾，去掉渐变与卡片边框 */
+.hero {
+  padding: 2px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero__kicker {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+}
+
+.hero__title {
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hero__subtitle {
+  margin-top: 10px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* 走完流程的报头：只有 kicker 变绿（完成是业务状态，不是装饰） */
+.hero--done .hero__kicker {
+  color: var(--ok);
+}
+
+/* ---------- 内容面 ---------- */
+
+/* 默认内容面：白底、无边框、无阴影。连续两块相同的白卡会显得「模板化」，
+   所以只在内容真的需要独立成块时用它，块内不要再套块。 */
+.card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.card--plain {
+  padding: 0;
+}
+
+/* 状态块：这几种是「业务状态 / 需要留意」，给底色 + 细边才讲得通 */
+.card--ok,
+.card--warn,
+.card--note {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.card--ok {
+  border-color: var(--ok-line);
+  background: var(--ok-soft);
+}
+
+.card--warn {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+}
+
+.card--note {
+  border-color: var(--navy-line);
+  background: var(--navy-soft);
+}
+
+/* 块标题：17px/600 就够，不要 700+ 加彩色 */
+.card__title {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.card__desc {
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* ---------- 列表 ---------- */
+
+/* ---------- 首页主视觉（.hero--welcome）----------
+ * 全站唯一的「整幅主视觉」：浅灰底色带 + 右侧实拍图 + 大标题 + 主按钮。
+ * 下面几条选择器带 body[data-page='welcome'] 前缀：一是明确「只作用于首页」，
+ * 二是要压过 panels.css 里窄屏对 .hero__title 的 22px 缩放（同优先级按文件顺序，容易踩坑）。 */
+
+body[data-page='welcome'] .hero {
+  position: relative;
+  overflow: hidden;
+  /* 底色带左右出血到屏幕边缘（上下留白自己给），所以抵消掉 .view 的左右边距 */
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 26px var(--gutter) 28px;
+  border-bottom: none;
+  background: var(--hero-bg);
+}
+
+/* 实拍图：贴右、贴底；左边缘用 mask 渐隐进底色带，避免出现一条硬邦邦的「贴纸边」 */
+body[data-page='welcome'] .hero__art {
+  position: absolute;
+  top: 18px;
+  right: 0;
+  bottom: 0;
+  width: 46%;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: cover;
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 34%);
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), #000 34%);
+}
+
+body[data-page='welcome'] .hero__body {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-page='welcome'] .hero__kicker {
+  margin-bottom: 12px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--navy);
+}
+
+body[data-page='welcome'] .hero__title {
+  font-size: 30px;
+  line-height: 1.24;
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+
+body[data-page='welcome'] .hero__subtitle {
+  /* 14em ≈ 210px（15px 字号）：左边留出实拍图的位置，断行也正好落在设计稿的两行上 */
+  max-width: 14em;
+  margin-top: 14px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.75;
+}
+
+/* ---------- 第一章「认识产品价值」（设计稿页面 2 / 页面 3）----------
+ * 版式：一行报头（见 base.css）→ 章节标签 → 大标题 + 一行说明 → 这一章各自的主体
+ *      （页面 2 是选项卡 + 结论块，页面 3 是两张工作类型卡片，见下面「页面 2」一段）。
+ * 下面几条带 body[data-page='...'] 前缀的只作用于第一章这两页（设计稿是同一套文字层级）：
+ * 标题用深蓝、说明收成「一行小字」、章节标签的字距收一档。 */
+
+/* 这一页的视觉焦点是「问题本身 / 两类需求」，标题按设计稿用深蓝（其它页面的标题仍是 --ink） */
+body[data-page='pain-point'] .page-title,
+body[data-page='need-types'] .page-title {
+  color: var(--navy);
+}
+
+/* 一行说明：设计稿里是「小一号的浅灰一行」。页面 2 那 29 个字在 390px 上刚好排满一行（12px）；
+   抬到 13px 就会折成两行，所以按设计稿的同一档小字排（12px 是项目字号下限，不再往下）。 */
+body[data-page='pain-point'] .page-subtitle,
+body[data-page='need-types'] .page-subtitle {
+  margin-top: 10px;
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+}
+
+/* 章节标签：设计稿的字距比首页报头紧，和「一行说明」几乎同号 */
+body[data-page='pain-point'] .chapter-intro__tag,
+body[data-page='need-types'] .chapter-intro__tag {
+  margin-bottom: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* 信息条（预计用时 / 无需考试）：细线单色图标 + 两行字，两块之间只用一条细线分开，不做卡片 */
+.facts {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* flex-basis 用内容宽度（auto）：左边那块短，右边「轻松体验，放心参与」就能占满一行不被挤断；
+   min-width: 0 是为了窄屏上允许收缩换行，而不是把整页撑出横向滚动 */
+.fact {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 12px;
+}
+
+.fact:first-child {
+  padding-left: 0;
+}
+
+.fact:last-child {
+  padding-right: 0;
+}
+
+.fact + .fact {
+  border-left: 1px solid var(--line);
+}
+
+.fact__icon {
+  flex: none;
+  color: var(--navy);
+}
+
+.fact__svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fact__label {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+}
+
+.fact__value {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  /* 窄屏上这一行偶尔要换行：balance 让它断得均匀，不会留下一个字孤零零占一行 */
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+/* 「你将体验」三步：等宽三列 + 列间箭头。箭头是版式的一部分，用伪元素画，不进 DOM */
+.steps__label {
+  margin-bottom: 14px;
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+
+.step-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  min-width: 0;
+}
+
+.step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  top: 3px;
+  right: -18px;
+  color: #a7b0be;
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+}
+
+.step__no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--navy-soft);
+  color: var(--navy);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.step__title {
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+
+.step__desc {
+  margin-top: 2px;
+  font-size: var(--fs-2xs);
+  line-height: 1.5;
+  /* 三列很窄，中文说明偶尔会换行；balance 让两行长度接近，避免最后一行只剩一个字 */
+  text-wrap: balance;
+  color: var(--ink-2);
+}
+
+.plain-list {
+  margin-top: 8px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.plain-list li + li {
+  margin-top: 6px;
+}
+
+.plain-list--ordered {
+  padding-left: 1.3em;
+}
+
+/* 客人原话：左侧一条深蓝竖线，作为「引语」的视觉主体，不用气泡底色 */
+.guest-line {
+  padding: 0 0 0 14px;
+  border-left: 3px solid var(--navy);
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+/* ---------- 按钮 ---------- */
+
+/* 主要操作用橙色，但不发光：圆角收小、去掉投影，靠颜色与高度被认出来 */
+.btn {
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, background 0.18s ease, opacity 0.18s ease;
+}
+
+.btn--lg {
+  min-height: var(--btn-h-lg);
+  font-size: var(--fs-h3);
+}
+
+.btn--ghost {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.btn--soft {
+  background: var(--navy-soft);
+  color: var(--navy);
+}
+
+.btn--ok {
+  background: var(--ok);
+}
+
+/* 主流程主按钮：设计稿把「开始体验 / 继续」这类「一路往前走」的按钮定成深蓝实底
+   （白字对比度约 8.9:1），导航色和操作色在这一类按钮上合一。
+   橙色（--brand）留给「需要被注意到」的单点操作，不再每个主按钮都刷。
+   改这条之前先看 README 第 7 节。 */
+.btn--navy {
+  background: var(--navy);
+}
+
+.btn--navy:active {
+  background: var(--navy-deep);
+}
+
+/* 主按钮里的方向箭头（「开始体验 →」）：跟着文字走，是方向指示，不是装饰图标 */
+.btn__arrow {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  vertical-align: -3px;
+}
+
+.btn__arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.is-disabled,
+.btn[disabled] {
+  background: #eef0f3;
+  color: #a4adb7;
+  cursor: not-allowed;
+}
+
+.btn.is-pressed {
+  opacity: 0.85;
+}
+
+/* 次要文字入口：深蓝下划线，视觉权重明显低于主按钮 */
+.linkbtn {
+  min-height: 44px;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.linkbtn--center {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 纯文字入口（首页「继续上次进度」）：设计稿里不带下划线，视觉权重再降一档 */
+.linkbtn--plain {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cta-row__note {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* 页脚细字（首页：进度保留 / 数据只在本机 / 微信里打开的提示）：
+   都是「必须说但不必强调」的话，统一 12px 辅助灰排在一起，不要各自成块 */
+.page-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* ---------- 选项 ---------- */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 选项是一行「条目」，不是彩色卡片：细边 + 白底；选中用深蓝（交互状态，不抢橙色） */
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 16.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option.is-selected {
+  border-color: var(--navy);
+  background: #f7f9fc;
+}
+
+/* 答对 / 答错是业务状态，用绿 / 琥珀覆盖选中色 */
+.option.is-correct {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.option.is-wrong {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.option__key {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option.is-selected .option__key {
+  background: var(--navy);
+  color: #fff;
+}
+
+.option.is-correct .option__key {
+  background: var(--ok);
+  color: #fff;
+}
+
+.option.is-wrong .option__key {
+  background: var(--warn);
+  color: #fff;
+}
+
+.option__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option__label {
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.option__desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.option__mark {
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.option.is-correct .option__mark {
+  color: var(--ok);
+}
+
+.option.is-wrong .option__mark {
+  color: var(--warn);
+}
+
+.option--compact {
+  min-height: 52px;
+  align-items: center;
+}
+
+.option--compact .option__label {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* 富选项（第一章产品价值、第三章公众号任务，设计稿页面 2）：
+   序号落在行中线上、卡片高一档；选中不再是「白底 + 细蓝边」，而是整块浅蓝 + 2px 深蓝边 + 深蓝字。
+   序号用 --navy-tint 而不是中性灰：这一列序号本身就是「这是第几个选项」的结构信息。 */
+.option--rich {
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+}
+
+.option--rich .option__key {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-top: 0;
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-size: var(--fs-sm);
+}
+
+/* 卡片里只有一行字：17 个字 + 序号 + 勾在 390px 上要排得下，所以正文降一档到 15px */
+.option--rich .option__label {
+  font-size: var(--fs-sm);
+}
+
+.option--rich.is-selected {
+  border-width: 2px;
+  background: var(--navy-wash);
+}
+
+.option--rich.is-selected .option__label {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* ---------- 即时反馈 / 题目 ---------- */
+
+/* 作答反馈：状态底色 + 细边（答对绿、答错琥珀），一句话讲清就走 */
+.explain {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--warn-line);
+  background: var(--warn-soft);
+}
+
+.explain--ok {
+  border-color: var(--ok-line);
+  background: var(--ok-soft);
+}
+
+.explain--note {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+}
+
+.explain__title {
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  margin-bottom: 6px;
+}
+
+.explain--ok .explain__title {
+  color: var(--ok);
+}
+
+.explain--note .explain__title {
+  color: var(--warn);
+}
+
+.explain__text {
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.explain__logic {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(38, 53, 72, 0.12);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+.explain__foot {
+  margin-top: 8px;
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+}
+
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 一屏的焦点就是「问题 + 选项」，问题用稍大字号，不刷颜色 */
+.quiz__question {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.quiz__hint {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.quiz__feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+/* ---------- 结论块 / 说明块 ---------- */
+
+/* 结论块（第一章产品价值，设计稿页面 2）：选完选项后展开的一整块浅蓝底。
+   一块底色只干一件事 —— 把「你关注的那件事，我们能帮上什么」圈成一个整体；
+   原来的「左侧深蓝竖线」在这页不用，因为下面还有「我们可以帮忙！」这一句要收在同一块里。 */
+.value-panel {
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--navy-wash);
+}
+
+/* 第一行：方形小序号 +「你关注的是 X」。序号跟着选项卡的圆序号走，收小一号当锚点 */
+.value-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.value-panel__badge {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  color: #fff;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.value-panel__kicker {
+  font-size: var(--fs-xs);
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+.value-panel__kicker strong {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* 核心结论：整页最重的一句。设计稿里这段是两行；390px 上 15px 会被挤成三行，
+   所以收一档到 14px 保住两行，并用 balance 让两行长短接近（设计稿也是「报表，」后换行）。
+   老设备不支持 text-wrap 时退回普通换行，不影响可读。 */
+.value-panel__summary {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.65;
+  color: var(--navy);
+  text-wrap: balance;
+}
+
+/* 三条要点：字号比结论小一档、灰色，靠颜色和字重和结论分开（不再靠字号拉太开）。
+   长句（如 A 的第 1 条）在 390px 上会折行，用 pretty 避免最后一行只剩一两个字 */
+.value-panel__points {
+  margin-top: 10px;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.value-panel__points li + li {
+  margin-top: 6px;
+}
+
+/* 三个点跟着结论色走（设计稿里是深蓝点）：把三条要点收在同一段里。
+   ::marker 在旧版 WebView 上不生效时会退回继承文字色，不影响可读性。 */
+.value-panel__points li::marker {
+  color: var(--navy);
+}
+
+/* 「我们可以帮忙！」+ 一句按选项给的话：这一块的情绪落点，压在结论块底部，排成一行。
+   固定前缀用 <strong> 强调，后半句跟着走 —— 12px 是项目字号下限，也是三句都排得下一行的尺寸 */
+.value-panel__help {
+  margin-top: 20px;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  line-height: 1.7;
+  color: var(--navy);
+}
+
+/* 说明块：一条细线（--soft）就够，用来说「完不成也没关系」这类旁白。
+   第一章那版「一句话结论」（.callout--highlight / .callout__text-lg）已随设计稿改版删除：
+   页面 2 现在用 .note-block 讲「请点击选择……」，两类的差别改由卡片自己讲。 */
+.callout {
+  padding: 0 0 0 14px;
+  border-left: 2px solid var(--line);
+}
+
+.callout--soft {
+  border-left-color: var(--line);
+}
+
+.callout__title {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+/* ---------- 页面 2：酒店工作类型（两类需求：服务类 / 咨询类，设计稿页面 3） ----------
+ * 版式：章节标签 + 大标题 + 一行说明 → 两张卡片（图标块 + 类别名 + 一句说明 +「>」）
+ *      → 卡内一块浅蓝底的客人原话 + 一句「AI 怎么处理」→ ⓘ 提示块 → 深蓝主按钮。
+ * 两张卡片是这一屏的主体：头部（图标 + 两类名字 + 「>」）+ 客人原话 + 一句说明要能被看成
+ * 一张卡，所以「白底 + 细边 + 圆角」这一层只在这两张卡上用（设计稿页面 3 的做法）；
+ * 浅蓝底只出现在卡内的客人原话和页脚的提示块上，靠底色差分区，不再叠第二层边框。 */
+
+.need-cards {
+  display: flex;
+  flex-direction: column;
+  /* 设计稿里两张卡片挨得很近（页内其它区块仍用 --page-gap） */
+  gap: 10px;
+}
+
+.need-card {
+  /* 头部按钮的 ::after 以整张卡为命中区，所以这里要有定位基准（见下） */
+  position: relative;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+/* 头部＝「选这一类」的入口：整行可点。视觉上不画按钮样式，仍是卡片的一部分；
+   命中区用 ::after 撑到整张卡（≥44px，见 README 第 8 节），
+   ::after 的定位基准是最近的定位祖先 = .need-card */
+.need-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.need-card__head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* 图标块：浅蓝底 + 深蓝细线图标（服务类＝有人接手，咨询类＝问一句答一句） */
+.need-card__icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--navy-tint);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.need-card__icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.need-card__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 类别名按设计稿用深蓝（这一屏要靠它一眼分清两类）；下面一行浅灰小字说「这类是什么」 */
+.need-card__name {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--navy);
+}
+
+.need-card__hint {
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+/* 未选中是「>」，选中是深蓝「✓」（同一屏的选中态只有这一处） */
+.need-card__mark {
+  flex: none;
+  display: flex;
+  align-items: center;
+  color: var(--ink-3);
+}
+
+.need-card__mark svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 客人原话：设计稿里是一整块浅蓝底、几句话竖排（不再是每条一句的左侧竖线）。
+   行高 1.6 就够（设计稿的行距正好等于 1.6 倍字号），靠底色把「客人说的」和
+   「AI 怎么处理」分开 */
+.need-card__examples {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--navy-wash);
+}
+
+.bubble {
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.need-card__desc {
+  margin-top: 12px;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+}
+
+/* 选中态：沿用第一章选项的同一套语言（2px 深蓝边；类别名本来就是深蓝，所以只换边和勾）。
+   第 2 个像素用 inset 阴影补，避免边框变粗时整块内容位移 */
+.need-card.is-selected {
+  border-color: var(--navy);
+  box-shadow: inset 0 0 0 1px var(--navy);
+}
+
+.need-card.is-selected .need-card__mark {
+  color: var(--navy);
+}
+
+/* ---------- 提示块（设计稿页面 3：ⓘ + 两行小字） ---------- */
+
+/* 卡片下面那句「请点击选择你在日常处理的工作类型……」：一整块浅蓝底 + 一枚细线图标。
+   这是这一屏唯一的说明容器，说明块最多两行（见第 8 节），不要再往里加句子 */
+.note-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--navy-wash);
+}
+
+.note-block__icon {
+  flex: none;
+  display: flex;
+  margin-top: 1px;
+  color: var(--navy);
+}
+
+.note-block__icon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.note-block__text {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* ---------- 小标题块 / 动作说明 ---------- */
+
+.stage-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stage-block__title {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+}
+
+.stage-block__hint {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+/* 「指派 / 解决」这类动作说明：用定义列表的样子，标签是深蓝文字不是橙色胶囊 */
+.action-explain {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.action-explain__row {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.action-explain__row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.action-explain__label {
+  flex: 0 0 44px;
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.action-explain__desc {
+  flex: 1;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+
+/* ---------- 时间线 ---------- */
+
+/* 也是「条目 + 细线」，不再套一个白卡；点亮用深蓝，跟进度条同一套语言 */
+.timeline {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.timeline__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline__title {
+  font-size: 16.5px;
+  font-weight: 600;
+}
+
+.timeline__hint {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+.timeline__list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.timeline__item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.timeline__item + .timeline__item {
+  border-top: 1px solid var(--line);
+}
+
+.timeline__item.is-lit {
+  opacity: 1;
+}
+
+.timeline__item.is-lit .timeline__dot {
+  background: var(--navy);
+  color: #fff;
+}
+
+.timeline__dot {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+}
+
+.timeline__content {
+  flex: 1;
+}
+
+.timeline__step-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.timeline__step-desc {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.timeline__item.is-lit .timeline__step-desc {
+  color: var(--ink-2);
+}
+
+.timeline__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.timeline__counter {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline.is-complete .timeline__counter {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+/* ---------- 标签 / 徽标 / 折叠区 / 记录 / 提示条 ---------- */
+
+/* 原来的彩色胶囊一律降级成「一行小字」：信息保留，装饰去掉 */
+.chip {
+  display: inline-block;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+}
+
+.chip--role {
+  color: var(--navy);
+}
+
+.chip--ok {
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 需要留意的说明（例如「结果只代表自我确认」）：保留必要的可辨识度 */
+.badge {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--warn-line);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+}
+
+.badge--warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* 折叠区：上下细线 + 44px 展开行，不再是一个白盒子 */
+.details {
+  padding: 2px 0;
+  border: none;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.details__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  /* 手机上展开行也是可点目标，按 44px 走 */
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.details__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 展开态用箭头示意，省掉一个图标文件 */
+.details__summary::after {
+  content: '›';
+  flex: none;
+  color: var(--ink-3);
+  font-size: 18px;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.details[open] .details__summary::after {
+  transform: rotate(-90deg);
+}
+
+.details__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding-bottom: 10px;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* 本地记录（演示用）：浅底细边，不再是一块黑底 */
+.records {
+  max-height: 260px;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #f8f9fb;
+  color: #324054;
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  /* 躲开 iPhone 底部小黑条（home indicator） */
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  z-index: 60;
+  max-width: 84vw;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(23, 54, 93, 0.94);
+  color: #fff;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(16, 39, 68, 0.22);
+  transform: translate(-50%, 16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.toast--ok {
+  background: rgba(24, 110, 66, 0.95);
+}
+
+.toast--note {
+  background: rgba(112, 82, 20, 0.95);
+}
+
+
+/* ---------- 指针设备（真鼠标）才给 hover：触摸屏上点完:hover 会一直挂着 ---------- */
+
+@media (hover: hover) {
+  .btn:hover:not(.is-disabled):not([disabled]) {
+    filter: brightness(1.04);
+  }
+
+  .btn--ghost:hover {
+    border-color: var(--ink-3);
+  }
+
+  .option:hover {
+    border-color: var(--line-strong);
+  }
+
+  .linkbtn:hover,
+  .details__summary:hover {
+    color: var(--navy-deep);
+  }
+
+  .details__summary:hover::after {
+    color: var(--navy);
+  }
+}
+
+/* ---------- 手机点按反馈：触摸设备上没有 hover 的过程态，按压要立刻有反应 ---------- */
+
+.option:active {
+  background: #f5f7fa;
+  border-color: var(--line-strong);
+}
+
+.btn.is-disabled:active,
+.btn[disabled]:active {
+  transform: none;
+}
+
+.linkbtn:active,
+.topbar__back:active,
+.details__summary:active {
+  opacity: 0.6;
+}
+
+/* ---------- 工具类 / 文本输入 ---------- */
+
+.is-hidden {
+  display: none !important;
+}
+
+.muted {
+  color: var(--ink-2);
+}
+
+.small {
+  font-size: var(--fs-2xs);
+  line-height: 1.65;
+}
+
+.freetext {
+  margin-top: 12px;
+}
+
+.freetext__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+.freetext__input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  /* 低于 16px 时 iOS 聚焦会自动放大整页（见 README 第 8 节） */
+  font-size: 16px;
+  resize: vertical;
+}
+
+.freetext__input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(23, 54, 93, 0.12);
+}
+

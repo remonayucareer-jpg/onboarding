@@ -1,0 +1,481 @@
+/* 设计令牌与基础样式
+ *
+ * ==================== 视觉系统（改这里就改全站，不要在页面里另起一套） ====================
+ * 企业深蓝 + 白 + 克制的日式编辑排版：靠留白、字号字重、对齐线建立层级，而不是靠容器装饰。
+ *
+ * 一、颜色职责（一条颜色只干一件事，不要互相抢）
+ *   --navy      深蓝：结构线、章节/导航、进度、选中状态、次要标签。不做大面积铺色。
+ *   --card/#fff 白：内容面。页面主体是白底 + 留白，不再「一段文字一个白卡片」。
+ *   --bg        浅灰：页面底色，用底色差区分区域，而不是给每个模块加边框阴影。
+ *   --brand     橙：只给主要操作（开始体验 / 继续 / 领取 / 提交）与交互强调（焦点环）。
+ *   --ok/--warn 绿 / 琥珀：只用于业务状态（答对、领取成功、需要留意），不做装饰。
+ *   --wrong    暖橙：只给「答错 / 选错」这一种状态（设计稿页面 5 实测色号，业务方复核过），
+ *              比 --warn 的琥珀更暖更红 —— 两种状态色不要混用。
+ *   禁止：标题一律蓝粗体、每个知识点一个彩色标签、没有业务含义的彩色底块、
+ *        蓝色渐变/发光/玻璃拟态这类「科技感」装饰。
+ *
+ * 二、层级：一屏只有一个视觉焦点（欢迎页＝主标题 + 开始按钮；题目页＝问题与选项；
+ *   动画页＝情境画面 + 当前一句提示；工单页＝真实界面 + 操作按钮），其余退到次级。
+ *
+ * 三、字体只有三级：页面标题（--fs-title，600）/ 正文与操作（--fs-body~--fs-h3）/
+ *   辅助信息（--fs-xs~--fs-2xs）。减少粗体：只有标题、按钮、结论用 600。
+ *
+ * 四、圆角与阴影：卡片 10px、按钮 8px、胶囊只留给状态标签；阴影只用于「浮起来才讲得通」
+ *   的元素（toast、手机/截图这类设备框），普通内容块一律无边框无阴影。
+ * =================================================================================
+ */
+:root {
+  /* ---------- 品牌色 ---------- */
+  --navy: #17365d; /* 主品牌深蓝 */
+  --navy-deep: #102744;
+  --navy-soft: #eef2f7;
+  --navy-line: #ccd8e6;
+  /* 深蓝的两档浅底：只给「选中 / 选完展开」这类状态块铺，不做装饰性色块 */
+  --navy-tint: #e9eff8; /* 选项序号底（设计稿页面 2）：比 --navy-soft 更偏蓝一档 */
+  --navy-wash: #f5f8fc; /* 选项选中底 / 结论块底：整块最浅的一档蓝灰 */
+  --brand: #ff6b1a; /* 品牌橙（沿用项目既有品牌色，只给主要操作） */
+  --focus-ring-color: rgba(255, 107, 26, 0.45); /* 键盘焦点环：橙 45%，只给焦点 */
+
+  /* ---------- 中性色 ---------- */
+  --ink: #263548; /* 正文：深灰近黑 */
+  --ink-2: #5b6878; /* 说明文字 */
+  --ink-3: #6a7787; /* 辅助信息（12~13px 下仍 ≥4.5:1） */
+  --bg: #f3f5f7; /* 页面底色：极浅中性灰 */
+  --hero-bg: #f7f8fa; /* 首页主视觉底色带：比 --bg 再浅一档，衬右侧实拍图与深蓝大标题 */
+  --card: #ffffff;
+  --line: #e2e6eb; /* 细分割线 */
+  --line-strong: #d5dbe2; /* 需要一点存在感的边（输入框、幽灵按钮） */
+
+  /* ---------- 业务状态色（只用于状态） ---------- */
+  --ok: #1b7f4b;
+  --ok-soft: #eef6f1;
+  --ok-line: #c8e2d4;
+  --warn: #8a6417; /* 需要留意（含「仅自我确认」这类诚实标注） */
+  --warn-soft: #f8f4ea;
+  --warn-line: #e6d9b8;
+  /* 「答错 / 选错」单独一族（设计稿页面 5 实测后由业务方给的定版色号）：
+     琥珀偏黄，压在暖橙的说明块上会发闷，所以选错态不借 --warn，用它自己这套暖橙 */
+  --wrong: #b4530a; /* 错误主色：说明块标题、错选项描边、字母徽标底、× 图标 */
+  --wrong-soft: #fdf4ea; /* 答错说明块的底色 */
+  --wrong-tint: #fef8f3; /* 错选项卡片底：比说明块再浅一档 */
+  --wrong-line: #f0dac2; /* 答错说明块的 1px 边框 */
+  --wrong-ink: #6e5c4b; /* 答错说明块的正文：暖深灰（比冷灰 --ink 更配橙底） */
+
+  /* ---------- 排版 ---------- */
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Helvetica Neue", Arial, sans-serif;
+  --fs-title: 24px; /* 页面主标题 */
+  --fs-h2: 19px;
+  --fs-h3: 17px;
+  --fs-body: 17px; /* 正文 */
+  --fs-sm: 15px;
+  --fs-xs: 13px;
+  --fs-2xs: 12px; /* 字号下限，不要再小 */
+  --lh-body: 1.7;
+
+  /* ---------- 尺寸与节奏 ---------- */
+  --gutter: 16px; /* 统一的左右边距 / 对齐线 */
+  --page-gap: 20px; /* 块与块之间的统一间距 */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --btn-h: 52px;
+  --btn-h-lg: 56px;
+  --shadow-soft: 0 6px 18px rgba(23, 42, 63, 0.08); /* 只给「设备框 / toast」这类浮起来的元素 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* 页面内 scrollIntoView（第二章切幕会把画面顶到顶部）和锚点跳转时，
+     给粘性头部留出高度，否则内容会被压在头部下面看不见 */
+  scroll-padding-top: 92px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  background: var(--bg);
+  /* 手机上整页不能左右拖动；overscroll 收住，玩小游戏时手指上滑不会触发浏览器下拉刷新 */
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+}
+
+/* 手机触摸体感：可点元素不做双击缩放；长按不弹系统选择菜单 / 放大镜；
+   点下去要立刻有反应（各组件自己再补按压态） */
+button,
+summary,
+[role='radio'],
+a[href] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding-left: 1.1em;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---------- 骨架 ---------- */
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  /* iOS 地址栏收起/展开时 100vh 会多出一截，dvh 跟随真实可视区（不支持的浏览器用上面的 100vh） */
+  min-height: 100dvh;
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
+  background: var(--card);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* 顶部留出刘海/状态栏安全区（viewport-fit=cover 时内容会顶到屏幕最上面）；
+     整块从 104px 收到 ~83px：手机上头部常驻，省下的高度全给内容 */
+  padding: calc(8px + env(safe-area-inset-top)) var(--gutter) 9px;
+  background: rgba(255, 255, 255, 0.96);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-2xs);
+  line-height: 1.35;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+
+/* 品牌识别只用一小块深蓝，不加图标 */
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--navy);
+  display: inline-block;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+/* 返回是手机上高频点的小按钮，命中高度按 44px 走 */
+.topbar__back {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.topbar__back.is-hidden {
+  visibility: hidden;
+}
+
+.topbar__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar__chapter {
+  color: var(--ink-3);
+}
+
+/* 当前章节：深蓝唯一的「导航」用法 */
+.topbar__step {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.topbar__count {
+  margin-left: auto;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-2xs);
+}
+
+/* 进度条贴在头部下沿（3px），不再单独占一行 —— 头部更矮，进度照样随时可见 */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: #e9edf2;
+  overflow: hidden;
+}
+
+/* 进度属于「结构」，用深蓝；橙色只留给操作按钮 */
+.progress__fill {
+  display: block;
+  height: 100%;
+  background: var(--navy);
+  transition: width 0.35s ease;
+}
+
+/* ---------- 首页报头（设计稿）：只有「品牌 + 页码」，进度条照旧贴在最下面 ---------- */
+
+/* 页码从第二行挪到品牌行右侧；第二行（返回 / 章节 / 步骤）在首页是冗余信息，
+   收起后 .topbar 高度归零，报头只剩一行品牌 + 一条进度 */
+body[data-page='welcome'] .topbar {
+  margin-top: 0;
+}
+
+body[data-page='welcome'] .topbar__back,
+body[data-page='welcome'] .topbar__meta {
+  display: none;
+}
+
+body[data-page='welcome'] .topbar__count {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top));
+  right: var(--gutter);
+  margin-left: 0;
+  line-height: 1.35;
+}
+
+/* ---------- 第一、二章内容页报头（设计稿页面 2 / 3 / 4）：返回 + 品牌 + 页码，一行收起 ---------- */
+
+/* 和首页同一套「一行报头」：第二行（返回 / 章节 / 步骤）在内容页同样是冗余信息 ——
+   章节名在正文里已经有（.chapter-intro__tag / .act__kicker），页码挪到品牌行右侧。
+   返回按钮要排在品牌左边，但 DOM 顺序是「品牌 → #progress-host」，
+   所以这里用 flex order 只改视觉顺序，不动 index.html 的结构。
+   第一章两页（pain-point / need-types）与第二章封面（scene-delivery）的设计稿是同一套报头，所以规则一起给；
+   其余页面仍是「两行报头 + 通栏进度条」——是否全站统一见 README 第 8 节待确认项；
+   页面 4 与其它两页的两处不同（返回是圆形、页码是深蓝）见本段末尾的单页覆盖。 */
+body[data-page='pain-point'] .header,
+body[data-page='need-types'] .header,
+body[data-page='scene-delivery'] .header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body[data-page='pain-point'] #progress-host,
+body[data-page='need-types'] #progress-host,
+body[data-page='scene-delivery'] #progress-host {
+  order: 1;
+}
+
+/* 品牌行回到报头主位：品牌名这部分是这一页唯一的「我是谁」，用深蓝；不再另加装饰点 */
+body[data-page='pain-point'] .header__brand,
+body[data-page='need-types'] .header__brand,
+body[data-page='scene-delivery'] .header__brand {
+  order: 2;
+  flex: 1;
+  min-width: 0;
+  color: var(--navy);
+}
+
+body[data-page='pain-point'] .brand-dot,
+body[data-page='need-types'] .brand-dot,
+body[data-page='scene-delivery'] .brand-dot {
+  display: none;
+}
+
+body[data-page='pain-point'] .brand-strong,
+body[data-page='need-types'] .brand-strong,
+body[data-page='scene-delivery'] .brand-strong {
+  font-weight: 600;
+}
+
+body[data-page='pain-point'] .topbar,
+body[data-page='need-types'] .topbar,
+body[data-page='scene-delivery'] .topbar {
+  margin-top: 0;
+}
+
+body[data-page='pain-point'] .topbar__meta,
+body[data-page='need-types'] .topbar__meta,
+body[data-page='scene-delivery'] .topbar__meta {
+  display: none;
+}
+
+/* 返回：设计稿是一个 34px 的方形图标按钮（只有箭头，没有「返回」两个字）。
+   这里只收起文字标签，箭头照常显示；44px 的命中区用 ::after 补出来
+   （::after 的定位基准是内边距盒 = 32px，所以 -8px 得到 48px ≥ 44px）。 */
+body[data-page='pain-point'] .topbar__back,
+body[data-page='need-types'] .topbar__back,
+body[data-page='scene-delivery'] .topbar__back {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-color: #eceff5;
+  color: var(--navy);
+  font-size: 17px;
+  line-height: 1;
+}
+
+body[data-page='pain-point'] .topbar__back-label,
+body[data-page='need-types'] .topbar__back-label,
+body[data-page='scene-delivery'] .topbar__back-label {
+  display: none;
+}
+
+body[data-page='pain-point'] .topbar__back::after,
+body[data-page='need-types'] .topbar__back::after,
+body[data-page='scene-delivery'] .topbar__back::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+/* 页码：用 top/bottom 把整块撑成报头内容区（= 34px 行高），再垂直居中 ——
+   这样它和品牌行自动同一条基线，不用写死像素。bottom 的 12px = 头部 9px 内边距 + 3px 进度条 */
+body[data-page='pain-point'] .topbar__count,
+body[data-page='need-types'] .topbar__count,
+body[data-page='scene-delivery'] .topbar__count {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top));
+  bottom: 12px;
+  right: var(--gutter);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* 报头下沿到章节标签：设计稿这里留得比其它页松（约 44px），整页的呼吸感从这一条开始 */
+body[data-page='pain-point'] .view,
+body[data-page='need-types'] .view {
+  padding-top: 28px;
+}
+
+/* 进度条按这一页的设计稿收进内容列（左右对齐章节标签），两端做圆角；
+   和其它页的「通栏进度条」不同 —— 是否全站统一见 README 第 8 节待确认项 */
+body[data-page='pain-point'] .progress,
+body[data-page='need-types'] .progress {
+  left: var(--gutter);
+  right: var(--gutter);
+  height: 4px;
+  border-radius: 2px;
+}
+
+body[data-page='pain-point'] .progress__fill,
+body[data-page='need-types'] .progress__fill {
+  border-radius: 2px;
+}
+
+/* ---------- 页面 4（第二章封面）与上面两页的两处不同 + 进度条 ----------
+ *  1) 返回按钮：设计稿画的是圆形（那两页是方形）。尺寸仍沿用 34px，
+ *     不为一页多出一档尺寸；圆形半径直接用 --radius-pill。
+ *  2) 页码：设计稿是深蓝加粗（那两页是灰色 --ink-3）——这一页页码跟着「4 / 9」的
+ *     深蓝标题语言走。
+ *  进度条：这一页设计稿是通栏方头（不是收进内容列的圆角条），所以不加进上面那两条，
+ *  只把高度从 3px 抬到设计稿的 4px；页码的 bottom 也跟着 12px → 13px（9px 内边距 + 4px 进度条）。 */
+body[data-page='scene-delivery'] .topbar__back {
+  border-radius: var(--radius-pill);
+}
+
+body[data-page='scene-delivery'] .topbar__count {
+  bottom: 13px;
+  color: var(--navy);
+  font-weight: 600;
+}
+
+body[data-page='scene-delivery'] .progress {
+  height: 4px;
+}
+
+/* 报头下沿到章节标签：设计稿这里 38 设计 px ≈ 26 CSS px，比默认的 16px 松、比第一二章的 28px 紧 */
+body[data-page='scene-delivery'] .view {
+  padding-top: 24px;
+}
+
+.view {
+  padding: 16px var(--gutter) 8px;
+  animation: rise 0.26s ease both;
+}
+
+/* 页面内容容器：每次路由渲染都会重建，页面上绑定的事件随之丢弃 */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.footer {
+  padding: 8px var(--gutter) calc(24px + env(safe-area-inset-bottom));
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* 页脚那句免责说明：和正文之间用一条细线收尾（结构线，不是装饰），前面加一枚细线盾牌图标 */
+.footer__note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.footer__icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+

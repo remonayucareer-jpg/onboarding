@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="368" height="368" viewBox="0 0 368 368" role="img"
+  aria-label="公众号二维码占位素材，不是真实二维码，无法扫描">
+  <rect width="368" height="368" fill="#ffffff" />
+  <rect x="14" y="14" width="340" height="340" rx="20" fill="#f7f9fc" stroke="#ffb98a" stroke-width="3"
+    stroke-dasharray="12 9" />
+  <g font-family="PingFang SC, Microsoft YaHei, sans-serif" text-anchor="middle" fill="#a76a00">
+    <text x="184" y="128" font-size="30" font-weight="700">占位素材</text>
+    <text x="184" y="170" font-size="21">公众号二维码</text>
+  </g>
+  <g font-family="PingFang SC, Microsoft YaHei, sans-serif" text-anchor="middle" fill="#8b98a6">
+    <text x="184" y="214" font-size="15">请替换为「华客极联云」真实二维码</text>
+    <text x="184" y="242" font-size="14">（本图为明显标注的占位图，不是二维码）</text>
+    <text x="184" y="276" font-size="13">文件路径：assets/images/wechat-qr-placeholder.svg</text>
+  </g>
+</svg>

@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#17365D" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      name="description"
+      content="华客 AI 智能客服培训前预习：按管理员或一线工作人员身份，进入对应的手机端学习内容。"
+    />
+    <title>华客 AI 智能客服 · 培训前预习</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/phone.css" />
+    <link rel="stylesheet" href="css/panels.css" />
+    <link rel="stylesheet" href="css/game.css" />
+    <link rel="stylesheet" href="css/roles.css" />
+    <link rel="stylesheet" href="css/frontline.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header" id="header">
+        <p class="header__brand"><span class="brand-dot"></span><span class="brand-strong">华客 AI 智能客服</span> · 培训前预习</p>
+        <div id="progress-host"></div>
+      </header>
+
+      <main class="view" id="view" aria-live="polite"></main>
+
+      <footer class="footer">
+        <p class="footer__note">
+          <svg class="footer__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3.6l6.6 2.7v5c0 4-2.7 7.6-6.6 9-3.9-1.4-6.6-5-6.6-9v-5z" />
+            <path d="M9.2 12.2l2 2 3.5-4" />
+          </svg>
+          <span>演示原型：所有工单均为演示数据，不会创建真实工单或发送通知。</span>
+        </p>
+      </footer>
+    </div>
+
+    <!-- 配置层：文案、题目、场景、上手卡，均可直接替换 -->
+    <script src="src/config/app.config.js"></script>
+    <!-- 一线员工的 11 屏：pages.config 的页面顺序与进度都由它生成，必须排在它前面 -->
+    <script src="src/config/frontline.config.js"></script>
+    <script src="src/config/pages.config.js"></script>
+    <script src="src/config/questions.config.js"></script>
+    <script src="src/config/scenes.config.js"></script>
+    <script src="src/config/handoff-card.config.js"></script>
+
+    <!-- 核心层：状态、数据记录、路由、UI 工具 -->
+    <script src="src/core/ui.js"></script>
+    <script src="src/core/store.js"></script>
+    <script src="src/core/analytics.js"></script>
+    <script src="src/core/report.js"></script>
+    <script src="src/core/router.js"></script>
+
+    <!-- 组件层 -->
+    <script src="src/components/quiz.js"></script>
+    <script src="src/components/timeline.js"></script>
+    <script src="src/components/phone-mock.js"></script>
+    <script src="src/components/single-choice.js"></script>
+    <script src="src/components/ticket-annotator.js"></script>
+    <script src="src/components/illustration.js"></script>
+    <script src="src/components/claw-game.js"></script>
+    <script src="src/components/corridor-game.js"></script>
+    <script src="src/components/frontline-audio.js"></script>
+    <script src="src/components/frontline-phone.js"></script>
+    <script src="src/components/frontline-scene.js"></script>
+
+    <!-- 页面层（角色入口 → 管理员完整预习 / 一线员工预习） -->
+    <script src="src/pages/roles.js"></script>
+    <script src="src/pages/welcome.js"></script>
+    <script src="src/pages/pain-point.js"></script>
+    <script src="src/pages/need-types.js"></script>
+    <script src="src/pages/scene-delivery.js"></script>
+    <script src="src/pages/quick-scene.js"></script>
+    <script src="src/pages/feedback.js"></script>
+    <script src="src/pages/official-account.js"></script>
+    <script src="src/pages/finish.js"></script>
+    <script src="src/pages/frontline.js"></script>
+    <!-- 11 个学习画面：一次注册 11 个页面 id（内容全部在 config/frontline.config.js） -->
+    <script src="src/pages/frontline-screens.js"></script>
+    <script src="src/pages/frontline-identity.js"></script>
+    <script src="src/pages/frontline-quiz-intro.js"></script>
+    <script src="src/pages/frontline-quiz.js"></script>
+
+    <script src="src/app.js"></script>
+  </body>
+</html>
+
+
+

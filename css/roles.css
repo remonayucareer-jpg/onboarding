@@ -1,0 +1,494 @@
+/* 角色入口与一线员工入口：手机单列、拇指可达、角色决定清晰。 */
+
+body[data-page='roles'] .app {
+  background: var(--hero-bg);
+}
+
+body[data-page='roles'] .header {
+  border-bottom: none;
+  background: rgba(247, 248, 250, 0.96);
+}
+
+body[data-page='roles'] .header__brand {
+  color: var(--navy);
+}
+
+body[data-page='roles'] .topbar,
+body[data-page='roles'] .progress,
+body[data-page='roles'] .footer {
+  display: none;
+}
+
+body[data-page='roles'] .view {
+  padding-top: clamp(30px, 7vh, 54px);
+  animation: none;
+}
+
+.role-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.role-selection__head {
+  max-width: 20em;
+}
+
+.role-selection__kicker {
+  margin-bottom: 10px;
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.role-selection__title {
+  color: var(--navy-deep);
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.role-selection__subtitle {
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+}
+
+.role-selection__options {
+  display: grid;
+  gap: 14px;
+}
+
+.role-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 154px;
+  padding: 18px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+}
+
+.role-card--admin {
+  border-color: var(--navy-line);
+  background: var(--navy-wash);
+}
+
+.role-card:active {
+  transform: translateY(1px);
+}
+
+.role-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--navy-tint);
+  color: var(--navy);
+}
+
+.role-card--frontline .role-card__icon {
+  background: var(--navy-soft);
+}
+
+.role-card__icon svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.role-card__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.role-card__eyebrow {
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.role-card__title {
+  margin-top: 4px;
+  color: var(--navy-deep);
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.role-card__desc {
+  margin-top: 6px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+
+.role-card__detail {
+  margin-top: 10px;
+  color: var(--navy);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+}
+
+.role-card__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+}
+
+.role-card__arrow svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- 按住的身份（管理员版暂时不开放） ---------- */
+.role-card.is-disabled {
+  cursor: not-allowed;
+  background: #f6f7f9;
+  border-style: dashed;
+}
+
+.role-card.is-disabled .role-card__icon,
+.role-card.is-disabled .role-card__desc,
+.role-card.is-disabled .role-card__detail {
+  opacity: 0.55;
+}
+
+.role-card.is-disabled .role-card__title {
+  color: var(--ink-2);
+}
+
+.role-card.is-disabled .role-card__arrow {
+  display: none;
+}
+
+.role-card.is-disabled:active {
+  transform: none;
+}
+
+.role-card__badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--navy-soft);
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.7;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.role-selection__helper {
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.role-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.role-context .chip {
+  margin: 0;
+}
+
+.role-context .linkbtn {
+  flex: none;
+  padding-right: 0;
+}
+
+body[data-page='frontline'] .app {
+  background: var(--hero-bg);
+}
+
+body[data-page='frontline'] .progress {
+  display: none;
+}
+
+body[data-page='frontline'] .topbar__count {
+  display: none;
+}
+
+body[data-page='frontline'] .topbar__meta {
+  visibility: hidden;
+}
+
+body[data-page='frontline'] .view {
+  padding-top: 24px;
+  animation: none;
+}
+
+body[data-page='frontline'] .footer {
+  display: none;
+}
+
+.frontline-ready {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: calc(100dvh - 132px);
+}
+
+.frontline-ready__head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.frontline-ready__kicker {
+  color: var(--navy);
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.frontline-ready__title {
+  color: var(--navy-deep);
+  font-size: 34px;
+  line-height: 1.24;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.frontline-ready__visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 196px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--navy-wash);
+}
+
+.frontline-ready__halo {
+  position: absolute;
+  width: 176px;
+  height: 176px;
+  border: 1px solid var(--navy-line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.frontline-ready__art {
+  position: relative;
+  display: block;
+  width: 172px;
+  height: 172px;
+  color: var(--navy);
+}
+
+.frontline-ready__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.frontline-ready__phone {
+  fill: var(--card);
+  stroke-width: 3;
+}
+
+.frontline-ready__phone-line {
+  stroke-width: 2.2;
+  opacity: 0.65;
+}
+
+.frontline-ready__speaker {
+  fill: var(--navy-tint);
+}
+
+.frontline-ready__wave {
+  stroke: var(--brand);
+  stroke-width: 3.2;
+}
+
+.frontline-ready__wave--far {
+  opacity: 0.55;
+}
+
+.frontline-ready__volume-line {
+  stroke: var(--ink-3);
+  stroke-width: 2.4;
+}
+
+.frontline-ready__volume-dot {
+  fill: var(--brand);
+  stroke: var(--brand);
+}
+
+.frontline-ready__tips {
+  display: grid;
+  gap: 10px;
+}
+
+.frontline-ready__tip {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid var(--navy-line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.frontline-ready__tip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--navy-tint);
+  color: var(--navy);
+}
+
+.frontline-ready__tip-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.frontline-ready__volume-title {
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.frontline-ready__volume-note {
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.frontline-ready__action {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.frontline-ready__button {
+  width: 100%;
+  min-height: 60px;
+  font-size: 20px;
+}
+
+.role-card:focus-visible,
+body[data-page='roles'] .topbar__back:focus-visible,
+body[data-page='frontline'] .topbar__back:focus-visible,
+.frontline-ready__button:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 3px;
+}
+
+@media (max-width: 360px) {
+  .role-selection__title {
+    font-size: 28px;
+  }
+
+  .role-card {
+    grid-template-columns: 46px minmax(0, 1fr) 18px;
+    gap: 11px;
+    padding: 16px 13px;
+  }
+
+  .role-card__icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .role-card__title {
+    font-size: 19px;
+  }
+
+  .frontline-ready {
+    gap: 20px;
+    min-height: calc(100dvh - 122px);
+  }
+
+  .frontline-ready__title {
+    font-size: 30px;
+  }
+
+  .frontline-ready__visual {
+    min-height: 174px;
+  }
+
+  .frontline-ready__halo {
+    width: 154px;
+    height: 154px;
+  }
+
+  .frontline-ready__art {
+    width: 150px;
+    height: 150px;
+  }
+
+  .frontline-ready__tip {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 66px;
+    padding: 12px;
+  }
+
+  .frontline-ready__tip-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .frontline-ready__volume-title,
+  .frontline-ready__volume-note {
+    font-size: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-card {
+    transition: none;
+  }
+}

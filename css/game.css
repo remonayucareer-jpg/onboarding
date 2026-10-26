@@ -1,0 +1,1819 @@
+/* 第二章「酒店服务接单小游戏」十幕互动剧情专用样式
+ * 只服务 src/pages/scene-delivery.js + illustration / ticket-annotator / single-choice / phone-mock(real) 四个组件，
+ * 不影响其余页面（其余页面不引用这些类名）。
+ */
+
+/* ==================== 一幕的骨架 ==================== */
+
+.act {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.act__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 章节标签（第二章 · 进入工作现场）：深蓝小字，和普通说明行拉开层级 */
+.act__kicker {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.14em;
+}
+
+/* 「第 3 幕 / 共 9 幕 · 先判断需求」：小字标签就够，幕数不需要彩色胶囊 */
+.act__no {
+  align-self: flex-start;
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.04em;
+}
+
+.act__title {
+  font-size: 22px;
+  line-height: 1.36;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+
+/* 大标题深蓝：设计稿页面 4（封面）与页面 5（第三幕）的大标题都是深蓝，
+   和第一章那两页、封面是同一套标题语言 —— 这一章 9 幕统一跟着走，不再一幕蓝一幕黑 */
+body[data-page='scene-delivery'] .act__title {
+  color: var(--navy);
+}
+
+.act__caption {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+.act__stage,
+.act__extra,
+.act__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.act__stage:empty,
+.act__extra:empty,
+.act__foot:empty {
+  display: none;
+}
+
+/* 画面下方的一句提示（字幕位）：左侧一条深蓝细线，不再套一个白卡 */
+.act__stage-text {
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.65;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--navy);
+}
+
+/* 「第 1/3 步」：小字标签，不刷底色 */
+.act__stage-step {
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--navy);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.act__stage-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.act__stage-dot {
+  width: 22px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--line);
+  transition: background 0.3s ease;
+}
+
+.act__stage-dot.is-on {
+  background: var(--navy);
+}
+
+/* 「满意度 +1（教学虚拟反馈）」：这里的重点是如实标注，用琥珀小字说清，不做绿色胶囊 */
+.act__chip {
+  align-self: center;
+  color: var(--warn);
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+}
+
+.act__note {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  line-height: 1.7;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+
+.act__foot-note {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ==================== 幕进度（九个点） ==================== */
+
+.act-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  /* 撑出上下留白：让点的命中区（::after）落在这一行自己的范围内，
+     不会压到上面的按钮，手指也不容易点空 */
+  padding: 12px 0 6px;
+}
+
+/* 进度点本身是可点的按钮（已经看过的幕可以点回去回看），造型仍是 9px 小圆点；
+   命中区用 ::after 撑大，方便手机上点到，同时不改变视觉与排版。
+   横向 -12px：9 个点在 320px 屏上也互不重叠 */
+.act-progress__dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--line-strong);
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.act-progress__dot::after {
+  content: '';
+  position: absolute;
+  inset: -11px -12px;
+}
+
+.act-progress__dot:not(.is-locked) {
+  cursor: pointer;
+}
+
+.act-progress__dot:not(.is-locked):active {
+  transform: scale(0.72);
+}
+
+/* 看过的幕：浅深蓝。进度属于「结构」，不用橙色 */
+.act-progress__dot.is-done {
+  background: #c3d0e0;
+}
+
+/* 触摸屏上点过之后 :hover 会一直挂着，看起来像「当前幕」；只在真有鼠标时才用 hover */
+@media (hover: hover) {
+  .act-progress__dot.is-done:hover {
+    background: var(--navy-deep);
+  }
+}
+
+.act-progress__dot:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 3px;
+}
+
+.act-progress__dot.is-on {
+  width: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--navy);
+  cursor: default;
+}
+
+/* ==================== 开场封面（设计稿页面 4） ====================
+ * 封面是第二章的入口屏：先说明这一章要看什么（三个看点 + 一句话），点「开始」才播第一幕。
+ * 封面不算一幕——9 个进度点照常渲染，第 1 个是当前幕（is-on）。
+ * 设计稿的量法与换算见 _tmp/ch2-redesign/README.md，改尺寸前先看那份记录。
+ */
+
+.cover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap);
+}
+
+.cover__head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 章节标签与各幕同一套字（和各幕的 .act__kicker 保持一致，不另起一套） */
+.cover__kicker {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.14em;
+}
+
+/* 大标题深蓝：设计稿里这一屏是「章节封面」，和第一、二章的内容页同一套标题语言 */
+.cover__title {
+  font-size: var(--fs-title);
+  line-height: 1.36;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--navy);
+}
+
+/* 封面卡片：设计稿是一张左灰蓝、右杏橙的柔光底。
+   没有业务含义的彩色渐变按视觉规矩（css/base.css 顶部注释）压到最浅的一档，
+   只留「左冷右暖」的暗示，颜色全部来自既有 token，不新增色值。 */
+.cover__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 80px 24px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--navy-tint) 0%, #fff 46%, var(--warn-soft) 100%);
+}
+
+.cover__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 「一段小动画 / 互动小游戏 / 约 1 分钟」：这一章要看什么，三个看点各一枚浅蓝胶囊 */
+.cover__chip {
+  height: 26px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--navy-line);
+  border-radius: var(--radius-pill);
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.02em;
+}
+
+.cover__line {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 主按钮：主流程「往前走」的按钮 = 深蓝实底 + --btn-h-lg（与第一、二章同一档） */
+.cover__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cover__cta-icon {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+}
+
+.cover__cta-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* 「开 始」：设计稿字距拉得比较开，只作用在标签上，不影响图标与按钮宽度 */
+.cover__cta-label {
+  letter-spacing: 0.2em;
+}
+
+.cover__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cover__note {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ==================== 自动播放（看剧情，不需要操作） ==================== */
+
+.autoplay {
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: #e9edf2;
+  overflow: hidden;
+}
+
+.autoplay__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  /* 播放进度 = 结构进度，用深蓝；橙色只留给要点的按钮 */
+  background: var(--navy);
+  transform-origin: left center;
+  animation-name: autoplay-grow;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes autoplay-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ==================== 剧情插画（内联 SVG，零网络请求） ====================
+ * 运动语言（只改这里就能统一全章动效）：
+ *  - 入场：每层淡入 + 8px 上移，60~120ms 错峰（错峰时间由插画里的 layer() 写入 animation-delay）
+ *  - 循环：每个角色只有 1 个「呼吸 / 悬浮」循环，局部动作（腿 / 尾巴 / 眼睛）各 1 个
+ *  - 禁止：全局抖动、无限弹跳、大幅缩放、用来回平移冒充走路
+ */
+:root {
+  --m-in: 620ms;
+  --m-idle: 4.6s;
+  --e-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --e-inout: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.illus-host {
+  display: flex;
+  justify-content: center;
+}
+
+/* 插画直接落在白底上：画面本身就是内容，不再给它套一个带边框的白卡 */
+.illus {
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.illus__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 动画统一用 transform-box: fill-box：以元素自身为基准位移/旋转，不受 SVG 坐标原点影响 */
+.illus__svg [class^='ill-'],
+.illus__svg [class*=' ill-'] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ---------- 入场：每一层单独淡入 + 轻微上移（.ill-in 由插画里的 layer() 生成并写入错峰时间） ---------- */
+.ill-in {
+  animation: ill-in var(--m-in) var(--e-out) both;
+}
+
+/* ---------- 角色循环：一个角色只有一个 ---------- */
+.ill-actor--guest {
+  animation: ill-breathe var(--m-idle) var(--e-inout) 0.9s infinite;
+}
+
+.ill-actor--staff {
+  animation: ill-breathe 5s var(--e-inout) 1s infinite;
+}
+
+.ill-actor--bot {
+  animation: ill-hover 4.2s var(--e-inout) 0.9s infinite;
+}
+
+/* 走路：身体一起一伏（写在 --staff 之后，走路那一幕用它覆盖呼吸） */
+.ill-walk {
+  animation: ill-step 1.05s var(--e-inout) infinite;
+}
+
+.ill-cat__head,
+.ill-staff__head {
+  transform-origin: center bottom;
+  animation: ill-nod 5.4s var(--e-inout) infinite;
+}
+
+.ill-tail {
+  transform-origin: 0% 55%;
+  animation: ill-tail 4.4s var(--e-inout) infinite;
+}
+
+.ill-eye,
+.ill-bot__eyes {
+  animation: ill-blink 6.2s steps(1, end) 1.1s infinite;
+}
+
+.ill-bot__core {
+  animation: ill-core 3.6s var(--e-inout) infinite;
+}
+
+.ill-handset {
+  transform-origin: 30% 100%;
+  animation: ill-hold 4.8s var(--e-inout) 0.6s infinite;
+}
+
+/* ---------- 分镜动作 ---------- */
+
+/* 第二幕：工单从 AI 胸前推到画面右侧，交给手机端 */
+.ill-ticket {
+  animation: ill-ticket-out 760ms var(--e-out) 1.35s both;
+}
+
+/* 第六幕 A：刚被拿起来的那瓶水（轻轻上提，不做漂浮） */
+.ill-taken {
+  animation: ill-lift 2.2s var(--e-inout) 0.5s infinite;
+}
+
+/* 第六幕 B：双腿交叉摆动 + 背景视差（走廊往后走，人往前走） */
+.ill-leg {
+  transform-origin: 50% 0%;
+}
+
+.ill-leg--a {
+  animation: ill-stride-a 1.05s var(--e-inout) infinite;
+}
+
+.ill-leg--b {
+  animation: ill-stride-b 1.05s var(--e-inout) infinite;
+}
+
+.ill-parallax {
+  animation: ill-parallax 3.8s linear 0.15s 1 forwards;
+}
+
+.ill-carried {
+  animation: ill-lift 1.05s var(--e-inout) infinite;
+}
+
+/* 第六幕 C：递到客人手上的那瓶水（在手掌与猫爪之间完成交接） */
+.ill-handover {
+  animation: ill-handover 2.6s var(--e-inout) 0.4s infinite;
+}
+
+/* 第七幕：客人抱在怀里的水 + 三颗依次浮现的小爱心 */
+.ill-keep {
+  animation: ill-lift 3.4s var(--e-inout) infinite;
+}
+
+.ill-heart {
+  animation: ill-rise 3.6s var(--e-inout) 0.7s infinite;
+}
+
+.ill-heart:nth-child(2) {
+  animation-delay: 1.6s;
+}
+
+.ill-heart:nth-child(3) {
+  animation-delay: 2.5s;
+}
+
+@keyframes ill-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ill-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.6px);
+  }
+}
+
+@keyframes ill-hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.4px);
+  }
+}
+
+@keyframes ill-nod {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+
+@keyframes ill-tail {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes ill-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes ill-core {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ill-hold {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-2.2deg);
+  }
+}
+
+@keyframes ill-ticket-out {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(118px, -22px) rotate(6deg);
+  }
+}
+
+@keyframes ill-lift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.8px);
+  }
+}
+
+@keyframes ill-step {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-1.8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(1.4px);
+  }
+}
+
+@keyframes ill-stride-a {
+  0%,
+  100% {
+    transform: rotate(9deg);
+  }
+  50% {
+    transform: rotate(-9deg);
+  }
+}
+
+@keyframes ill-stride-b {
+  0%,
+  100% {
+    transform: rotate(-9deg);
+  }
+  50% {
+    transform: rotate(9deg);
+  }
+}
+
+@keyframes ill-parallax {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-22px);
+  }
+}
+
+@keyframes ill-handover {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(1.6px, -1.6px);
+  }
+}
+
+@keyframes ill-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-18px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-32px) scale(1);
+  }
+}
+
+/* ==================== 第二幕后半段：工单生成 → 推送到手机 ====================
+ * 「滑入手机」那块默认放真图（assets/images/phone-wo-notify-real.png，素材自带手机外壳与红框），
+ * 只有素材缺失时才回退到 .push__phone 的模拟界面 —— 两份都留着，不要只删其中一份。
+ */
+
+.push {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #f8f9fb;
+}
+
+.push__card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 1px solid var(--line);
+  animation: push-card-in 0.5s ease both;
+}
+
+.push__card-title {
+  font-size: 16.5px;
+  font-weight: 800;
+}
+
+.push__card-line {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.push__card-note {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+
+/* ---------- 真图版：素材自带手机外壳与红色高亮框，所以不再套设备框 ---------- */
+.push__shot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+/* 482 × 805 的素材在 390 屏上按内容列宽显示（约 0.68 倍），字段文字仍有 ~10px 看得清；
+   原图只有 482px 宽，再放大就糊，所以不跟着内容列无限放大。
+   注意这里**不要**再给边框 / 圆角 / 投影：素材是一整块不透明矩形（自带手机外壳 + 外壳外那圈柔和投影），
+   套上去等于在手机外面画一个直角方框 —— 方框线就是 --line-strong #d5dbe2，外圈还有一圈方形投影晕。
+   去掉之后，量过：图的四边外侧是 #F9F9FB~#FFFFFF，与卡片底色 #f8f9fb 只差 ≤7 个色阶，接缝看不出来，
+   手机和它自带的投影自然浮在卡片上。 */
+.push__shot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: push-phone-in 0.6s ease both;
+}
+
+/* 来源说明：如实写清这是真实产品截图，并且红框是素材里画好的（不是本页的标注） */
+.push__shot-caption {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ---------- 缺素材时的模拟界面（回退用，字段与真图同构） ---------- */
+.push__phone {
+  position: relative;
+  width: 64%;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 12px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--line-strong);
+  background: #f6f8fb;
+  box-shadow: var(--shadow-soft);
+  animation: push-phone-in 0.6s ease both;
+}
+
+.push__phone-notch {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d7dee6;
+}
+
+.push__notify {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.push__notify-app {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+}
+
+.push__notify-title {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+}
+
+.push__notify-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+}
+
+@keyframes push-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes push-phone-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==================== 真实工单截图 + 红框标注 ==================== */
+
+.shot-host {
+  display: flex;
+  justify-content: center;
+}
+
+.shot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.shot__frame {
+  width: 100%;
+  max-width: 330px;
+}
+
+/* 图片按自身比例撑开高度，红框（百分比定位）与截图像素一一对应；
+   不再用 padding-top 百分比撑高，否则百分比会按父容器宽度计算，把截图裁掉两边 */
+.shot__inner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.shot__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shot__boxes {
+  position: absolute;
+  inset: 0;
+}
+
+/* 标注框用深蓝（结构标注色）：同一屏里橙色只该出现在要点的按钮上 */
+.shot__box {
+  position: absolute;
+  border-radius: 6px;
+  border: 2px solid var(--navy);
+  /* 超大投影把红框以外的区域压暗，形成「只讲这一项」的聚光效果（由 .shot__inner 裁切） */
+  box-shadow: 0 0 0 9999px rgba(15, 26, 38, 0.3);
+  animation: shot-box-in 0.38s ease both;
+}
+
+.shot__tag {
+  position: absolute;
+  top: -13px;
+  left: -3px;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--navy);
+  color: #fff;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 配置里 tagSide: 'right' 时标签挂到右上方，避开左边的字段名 */
+.shot__box--tag-right .shot__tag {
+  left: auto;
+  right: -3px;
+}
+
+.shot__box--tag-right .shot__step {
+  right: auto;
+  left: -3px;
+}
+
+.shot__step {
+  position: absolute;
+  right: -3px;
+  bottom: -11px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+  font-size: var(--fs-2xs);
+}
+
+.shot__fallback-fields {
+  width: 100%;
+}
+
+.ticket__row.is-annotated {
+  border-radius: var(--radius-sm);
+  background: var(--navy-soft);
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+@keyframes shot-box-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==================== 第三幕：先判断需求（设计稿页面 5） ====================
+ * 这一屏 = 真机工单截图（套一层手机设备框、不标注）+ 三选一 + 选错反馈 + 深蓝「具体讲解 →」+ 一句安抚。
+ * 设计稿 418 宽（内容列 x25..392）↔ 390 CSS px，换算系数 0.933；
+ * 逐块量法与取舍清单见 _tmp/ch2-redesign/README-p5.md，改尺寸前先看那份记录。
+ */
+
+/* ---------- 设备框：白卡 + 手机状态栏 + 截图 + home 条 ---------- */
+/* 截图素材只有 App 界面（没有状态栏、没有 home 条），这两条是设计稿给「这是一台手机」补的 */
+.shot__device {
+  /* 设计稿卡片 275 设计 px ≈ 257 CSS px（内容列的 72%），比第五幕那台手机（330px）窄一号 */
+  width: 258px;
+  max-width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.shot__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 25px;
+  padding: 0 17px;
+  color: var(--navy);
+}
+
+.shot__status-time {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.shot__status-icons {
+  display: block;
+  width: 62px;
+  height: 10px;
+  fill: currentColor;
+}
+
+/* 截图两侧各内缩 4px、上圆角 9px：设计稿里蓝色报头比卡片窄一点，四个角跟着卡片圆 */
+.shot__screen {
+  margin: 0 4px;
+  border-radius: 9px 9px 0 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 设备框里的截图不再自己画边框圆角（那一圈交给 .shot__device 与 .shot__screen） */
+.shot__screen .shot__inner {
+  border: none;
+  border-radius: 9px 9px 0 0;
+  box-shadow: none;
+}
+
+.shot__home {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0 14px;
+}
+
+.shot__home-bar {
+  width: 80px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--line-strong);
+}
+
+/* ---------- 选项：圆角方形序号 + 选中 / 选错的暖色状态 ---------- */
+/* 这一页设计稿的序号是圆角方形（页面 2 的序号是圆形，那两页不动）；序号底色沿用 --navy-tint */
+.act[data-act-kind='quiz'] .option {
+  min-height: 52px;
+  padding: 12px 14px;
+  gap: 10px;
+  align-items: center;
+}
+
+.act[data-act-kind='quiz'] .option__key {
+  flex-basis: 26px;
+  width: 26px;
+  height: 26px;
+  margin-top: 0;
+  border-radius: 8px;
+  background: var(--navy-tint);
+  color: var(--navy);
+}
+
+.act[data-act-kind='quiz'] .option__label {
+  font-size: var(--fs-sm);
+}
+
+/* 选中：2px 边 + 深蓝加粗字，和第一章那两个选项块是同一套「选中」语言；
+   选错时 .option.is-wrong 的暖橙接在它上面（业务状态色优先，见下面那一段） */
+.act[data-act-kind='quiz'] .option.is-selected {
+  border-width: 2px;
+}
+
+.act[data-act-kind='quiz'] .option.is-selected .option__label {
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* 选错的暖橙一族（业务方复核过的色号，token 在 css/base.css 的业务状态色）：
+   设计稿量到的是 #B4530A，比 --warn 的琥珀 #8a6417 更暖更红，所以选错态不借 --warn，
+   由这里逐点落实 5 个色号（说明块标题 / 错选项描边 / 字母徽标底 / × 图标 / 说明块底边字）。
+   只作用于这一屏：其他幕与其他章节的 --warn 琥珀不受影响（冒烟 13.12j 守着这条）。 */
+.act[data-act-kind='quiz'] .option.is-wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-tint);
+}
+
+.act[data-act-kind='quiz'] .option.is-wrong .option__key {
+  background: var(--wrong);
+  color: #fff;
+}
+
+.act[data-act-kind='quiz'] .option.is-wrong .option__mark {
+  color: var(--wrong);
+}
+
+/* 说明块：暖白底 + 浅橙细边 + 深橙标题 + 暖深灰正文（正文不用 --ink，冷灰压在橙底上发脏） */
+.act[data-act-kind='quiz'] .explain--note {
+  border-color: var(--wrong-line);
+  background: var(--wrong-soft);
+}
+
+.act[data-act-kind='quiz'] .explain--note .explain__title {
+  color: var(--wrong);
+}
+
+.act[data-act-kind='quiz'] .explain--note .explain__text {
+  color: var(--wrong-ink);
+}
+
+/* 题面（「这位客人的需求是什么？」）：这一屏的焦点是问题本身，按设计稿用深蓝 */
+.act[data-act-kind='quiz'] .quiz__question {
+  color: var(--navy);
+}
+
+/* ==================== 第五幕：真实产品界面复刻（员工自己点「领取」） ==================== */
+
+.phone--real {
+  max-width: 330px;
+}
+
+.phone__frame--real {
+  border-radius: 22px;
+}
+
+/* 以下 .phone__appbar / .wo__* / .btn--real 是「按真实产品截图复刻」的部分：
+   蓝色标题栏、红色「待处理」角标都取自 assets/images/phone-wo-detail-real.png，
+   属于被演示的产品本身，不套用本页的深蓝/白/橙配色（不要把这里改成品牌色）。*/
+.phone__appbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #2f6fd0;
+  color: #fff;
+}
+
+.phone__appbar-back,
+.phone__appbar-more {
+  width: 22px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.phone__appbar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.phone__tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.phone__tab {
+  flex: 1;
+  padding: 10px 4px 8px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7a89;
+}
+
+.phone__tab.is-active {
+  color: #1e2a38;
+  font-weight: 700;
+  box-shadow: inset 0 -2px 0 #2f6fd0;
+}
+
+.phone__body--real {
+  gap: 12px;
+  padding: 14px;
+  min-height: 298px;
+}
+
+.wo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wo__title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: #1e2a38;
+}
+
+.wo__meta {
+  font-size: 12.5px;
+  color: #9aa7b4;
+}
+
+.wo__badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.wo__badge--pending {
+  background: #e5534b;
+  color: #fff;
+}
+
+.wo__badge--doing {
+  background: var(--ok-soft);
+  color: var(--ok);
+  animation: wo-badge-in 0.5s ease both;
+}
+
+.wo__demand {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.wo__section {
+  padding-top: 6px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ticket__fields--real {
+  gap: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.ticket__fields--real .ticket__row {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.ticket__fields--real .ticket__row:last-child {
+  border-bottom: none;
+}
+
+.ticket__fields--real .ticket__row dt {
+  flex: 0 0 72px;
+  color: #566b7e;
+}
+
+.ticket__fields--real .ticket__row dd {
+  font-weight: 500;
+}
+
+.phone__actionbar--real {
+  padding: 10px 14px 14px;
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.btn--real {
+  background: #2f6fd0;
+  box-shadow: 0 8px 18px rgba(47, 111, 208, 0.22);
+}
+
+.btn--real:active {
+  background: #2458a6;
+}
+
+@keyframes wo-badge-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ==================== 第六幕：飞爪抓取挑战（可玩的小游戏） ====================
+ * 判定、宽容区、动画全在 src/components/claw-game.js 里，这里只管版式：
+ *   任务条 → 游戏区（320 × 250 的 SVG 按容器宽度等比缩放，判定坐标不随屏幕变化）
+ *   → 物品名（与画面里左→右同序）→ 提示行 → 主按钮「抓取」→ 一句说明 → 「跳过游戏」。
+ * 「抓取」用 --btn-h-lg 的高按钮（单手拇指区、不用瞄）；「跳过游戏」走 .linkbtn（44px 命中区、
+ * 深蓝下划线）。不刷红色、不做倒计时：这一关不存在失败，抓错只是「再抓一次」。
+ */
+
+.claw-host {
+  display: flex;
+  flex-direction: column;
+}
+
+.claw {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 任务条：和 .act__stage-text 同一套语言（左侧一条深蓝细线），右侧固定「纯净水 × 1」 */
+.claw__task {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--navy);
+  background: var(--navy-wash);
+}
+
+.claw__task-line {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.claw__task-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: 0 0 auto;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.claw__task-count {
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 游戏区：这一块是「设备面」，所以允许一层浅边 + 圆角（与 .push / .shot__inner 同档） */
+.claw__board {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: #f7f9fc;
+}
+
+.claw__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 成功提示：压在游戏区上方正中；停留时长由 timing.successHoldMs 写进 animation-duration */
+.claw__flash {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: rgba(23, 54, 93, 0.92);
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 即使动画被系统偏好或浏览器停掉，这句反馈也要看得见，所以 is-on 自己带 opacity: 1 */
+.claw__flash.is-on {
+  opacity: 1;
+  animation-name: claw-flash-in;
+  animation-timing-function: var(--e-out);
+  animation-fill-mode: both;
+}
+
+@keyframes claw-flash-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.92);
+  }
+  16%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -56%) scale(1);
+  }
+}
+
+/* 物品名：和画面里左→右同序；抓到哪件，哪件下面出现一条深蓝线（说明「刚才抓的是这件」） */
+.claw__legend {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.claw__legend-item {
+  flex: 1 1 0;
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  text-align: center;
+  line-height: 1.5;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.claw__legend-item.is-hit {
+  border-bottom-color: var(--navy);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* 提示行（字幕位）：固定一行高，抓错 / 抓中 / 自动对准都只换文字，不顶动下面的按钮 */
+.claw__hint {
+  min-height: 21px;
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 「抓取」：这一幕唯一的橙色主按钮，宽度撑满、--btn-h-lg 保底命中区 */
+.claw__release {
+  width: 100%;
+}
+
+.claw__tip {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.claw__skip {
+  margin-top: 2px;
+}
+
+/* 「跳过游戏」后面那句说明：和 .act__note 同一套（细线 + 小字），不另起一格 */
+.claw__note {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+
+/* ==================== 第七幕：走廊寻房挑战（俯视走廊走位） ====================
+ * 地图 / 碰撞 / 房门口判定全在 src/components/corridor-game.js（352 × 256 的 SVG 按容器宽度
+ * 等比缩放，判定坐标不随屏幕变化），这里只管版式：
+ *   任务条（任务标签 + 要送的房号 + 手里那瓶水）→ 走廊（石材地面 / 深蓝门牌 / 壁灯，门前不铺地垫）
+ *   → 方向盘（四枚 52px 圆形键 + 中心圆点 + 一条细线外圈，命中区 ≥ 44px）
+ *   → 提示行（固定一行高）→「跳过走位，直接送达」。
+ * 不刷红色、不做倒计时、不铺深色圆盘：这一关不存在失败 —— 撞墙只是停在原地，走错门只是提示一句。
+ */
+
+.corridor-host {
+  display: flex;
+  flex-direction: column;
+}
+
+.corridor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 任务条：两行固定版式（标签 + 手里有什么 / 要送到哪一间）——
+   用 grid 而不是一行 flex：窄屏不会把三件东西挤成三行 */
+.corridor__task {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+
+.corridor__task-tag {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 4px 10px 4px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.corridor__tag-icon {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+
+.corridor__task-line {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.corridor__task-item {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px 4px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--navy-wash);
+  color: var(--ink-2);
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
+}
+
+.corridor__task-bottle {
+  width: 12px;
+  height: 17px;
+}
+
+.corridor__task-count {
+  color: var(--navy);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 走廊：这一块是「设备面」，与 .claw__board / .shot__inner 同档（一层浅边 + 圆角） */
+.corridor__board {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+}
+
+.corridor__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 走位：位置写在 transform 上（SVG 的 px 就是用户单位），位移交给过渡 —— 不跑动画循环 */
+.corridor__actor {
+  transition: transform 0.22s var(--e-out);
+}
+
+/* 8011 房门口的暖光：慢速呼吸，只提示「门在这里」，不闪不跳 */
+.corridor__glow {
+  animation: corridor-glow 2.8s ease-in-out infinite;
+}
+
+@keyframes corridor-glow {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 成功提示：与第六幕 .claw__flash 同一套（停留时长由 timing.successHoldMs 写进 animation-duration） */
+.corridor__flash {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 7px 14px 7px 9px;
+  border: 1px solid var(--navy-line);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.corridor__flash::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--card);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.corridor__flash.is-on {
+  opacity: 1;
+  animation-name: corridor-flash-in;
+  animation-timing-function: var(--e-out);
+  animation-fill-mode: both;
+}
+
+@keyframes corridor-flash-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.94);
+  }
+  16%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -56%) scale(1);
+  }
+}
+/* 操作区：方向键 + 提示行收成一块「方向盘 + 字幕」，浅蓝底与上面那张白卡片分开 */
+.corridor__console {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--navy-wash);
+}
+
+/* 方向键：3 × 3 九宫格只放四枚圆形键，中间一格是圆点，外面一圈 1px 细线把四枚键连成「盘」 */
+.corridor__pad {
+  position: relative;
+  width: 168px; /* 3 × 52px 键 + 2 × 6px 间距：外圈那条细线才画成圆，不是椭圆 */
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-auto-rows: 52px;
+  gap: 6px;
+}
+
+.corridor__pad-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--navy-line);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.corridor__pad-slot {
+  display: block;
+}
+
+.corridor__pad-core {
+  align-self: center;
+  justify-self: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--navy-line);
+  border-radius: 50%;
+  background: var(--card);
+}
+
+.corridor__pad-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--navy);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.corridor__pad-btn:active {
+  background: var(--navy-soft);
+  transform: scale(0.94);
+}
+
+.corridor__pad-btn:disabled {
+  color: var(--ink-3);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.corridor__pad-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* 方向键与「跳过走位」的键盘焦点环：和 .btn / .linkbtn 同一档（橙 45%），不靠键盘时看不见 */
+.corridor__pad-btn:focus-visible,
+.corridor__skip:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+/* 提示行（字幕位）：固定一行高，撞墙 / 走错门 / 还差几步都只换文字，不顶动上面的方向键 */
+.corridor__hint {
+  min-height: 21px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.corridor__tip {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 「跳过走位，直接送达」：次要入口 —— 白底细边的胶囊，比主按钮低一档，命中区仍 ≥ 44px */
+.corridor__skip {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.corridor__skip:active {
+  background: var(--navy-soft);
+}
+
+.corridor__skip:disabled {
+  color: var(--ink-3);
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 「跳过走位」后面那句说明：和 .act__note 同一套（细线 + 小字），不另起一格 */
+.corridor__note {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+/* ==================== 第十幕：实际工作流程总结 ==================== */
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 四步流程：条目 + 细线，不再一层层套白卡 */
+.flow__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.flow__item:last-child {
+  border-bottom: none;
+}
+
+.flow__index {
+  flex: 0 0 20px;
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.flow__text {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.choice-host {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== 动效降级：系统开启「减少动态效果」时全部停掉 ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .autoplay__fill,
+  .illus__svg [class^='ill-'],
+  .push__card,
+  .push__phone,
+  .push__shot-img,
+  .shot__box,
+  .corridor__glow,
+  .wo__badge--doing {
+    animation: none !important;
+  }
+
+  .autoplay__fill {
+    transform: none;
+  }
+
+  .shot__box {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 走位本来就是「一格一格」的：减少动效时直接落位，位置变化照样看得见 */
+  .corridor__actor {
+    transition: none;
+  }
+}
+
+/* 窄屏（小屏手机）收一点留白，避免单屏信息过载 */
+@media (max-width: 360px) {
+  .act {
+    gap: 12px;
+  }
+
+  .act__title {
+    font-size: 21px;
+  }
+
+  /* 封面卡片在 390 屏上是 80px 上下留白；小屏收到 48px，保证这一屏还是「一屏讲完」 */
+  .cover__card {
+    padding: 48px 20px;
+  }
+
+  /* 任务条在窄屏上改成上下两行：任务句和「纯净水 × 1」都完整显示，不挤成两栏 */
+  .claw__task,
+  .corridor__task {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

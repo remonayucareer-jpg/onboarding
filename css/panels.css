@@ -1,0 +1,282 @@
+/* 公众号任务卡、我的工单上手卡、打印样式、屏幕适配、无障碍
+ *
+ * 这两张卡是「内容真的需要独立成块」的地方，所以允许有细边和白底；
+ * 但同样不加阴影、不用渐变，序号/结论靠文字层级表达。
+ */
+
+/* ---------- 公众号任务卡 ---------- */
+
+.account-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.account-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.account-card__qr {
+  position: relative;
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #f8f9fb;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 占位素材必须有明显标注：用白底 + 琥珀文字，压在二维码下沿 */
+.account-card__qr-badge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid var(--warn-line);
+  color: var(--warn);
+  /* 手机上 10.5px 基本看不清，抬到 12px（本项目服务年长员工，正文下限 12px） */
+  font-size: var(--fs-2xs);
+  line-height: 1.3;
+  text-align: center;
+}
+
+.account-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-card__label {
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.account-card__name {
+  margin-top: 2px;
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.account-card__desc {
+  margin-top: 6px;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* ---------- 我的工单上手卡 ---------- */
+
+/* 一张「文档」：白底、细边、细线分栏；序号是深蓝文字，不做彩色圆点 */
+.handoff-card {
+  padding: 20px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.handoff-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.handoff-card__brand {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.12em;
+}
+
+.handoff-card__title {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.handoff-card__subtitle {
+  margin-top: 6px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+.handoff-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.handoff-card__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.handoff-card__num {
+  flex: 0 0 18px;
+  color: var(--navy);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.handoff-card__text {
+  flex: 1;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.handoff-card__foot {
+  margin-top: 14px;
+  font-size: var(--fs-2xs);
+  color: var(--ink-3);
+  line-height: 1.65;
+}
+
+/* ---------- 打印：只保留上手卡 ---------- */
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .header,
+  .footer,
+  .cta-row,
+  .details,
+  .callout,
+  .toast,
+  .card,
+  .hero {
+    display: none !important;
+  }
+
+  .view {
+    padding: 0;
+  }
+
+  .page {
+    gap: 0;
+  }
+
+  .handoff-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: none;
+  }
+
+  .handoff-card__item {
+    break-inside: avoid;
+  }
+}
+
+/* ---------- 屏幕适配 ---------- */
+
+/* 窄屏（小屏手机）：标题收一档，但正文/选项不再往 14px 以下收 */
+@media (max-width: 380px) {
+  .page-title,
+  .hero__title {
+    font-size: 22px;
+  }
+
+  .quiz__question,
+  .stage-block__title {
+    font-size: 17.5px;
+  }
+
+  .account-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .account-card__qr {
+    flex: none;
+  }
+
+  .account-card__info .plain-list {
+    text-align: left;
+  }
+
+  /* 首页信息条：320px 上两块并排，数值降一档（13px 仍高于 12px 字号下限）就不会被挤断 */
+  .fact__value {
+    font-size: var(--fs-xs);
+  }
+}
+
+/* 矮屏（老机型 / 横屏）：竖向留白再收一点，让主按钮尽量靠近第一屏 */
+@media (max-height: 660px) {
+  .view {
+    padding-top: 12px;
+  }
+
+  .page {
+    gap: 16px;
+  }
+
+  .hero {
+    padding-bottom: 14px;
+  }
+
+  .hero__subtitle,
+  .page-subtitle {
+    margin-top: 6px;
+  }
+}
+
+@media (min-width: 620px) {
+  .app {
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+}
+
+/* ---------- 无障碍 ---------- */
+
+/* 键盘 / 辅助设备焦点可见：焦点环沿用「交互强调色」（橙），与按钮同族 */
+.btn:focus-visible,
+.option:focus-visible,
+.linkbtn:focus-visible,
+.topbar__back:focus-visible,
+.freetext__input:focus-visible,
+.details__summary:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* 系统开启「减少动态效果」时，只保留必要的变化 */
+@media (prefers-reduced-motion: reduce) {
+  .view {
+    animation: none;
+  }
+
+  .timeline__item {
+    opacity: 1;
+  }
+
+  .progress__fill,
+  .toast {
+    transition: none;
+  }
+}
+
