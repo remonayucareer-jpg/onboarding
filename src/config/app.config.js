@@ -46,13 +46,12 @@ HKR.config.app = {
 
   // 后端预留：第一版 enabled = false，全部数据只存在本机浏览器
   api: {
-    enabled: false,
-    endpoint: '', // 例如 https://your-api.example.com/api/pretrain/events
-    /* 一线员工：登记信息 / 交卷结果 各留一个地址；填上地址再把 enabled 改 true 就开始上报 */
-    identityEndpoint: '', // 例如 https://xxx/api/frontline/identity
-    resultEndpoint: '', // 例如 https://xxx/api/frontline/result
-    headers: {},
-    timeoutMs: 8000
+    enabled: true,
+  endpoint: '',
+  identityEndpoint: 'https://hkr-training-relay.app.workbuddy.host/api/frontline/identity?sharecode=Y5UUYIKLC2',
+  resultEndpoint: '',
+  headers: {},
+  timeoutMs: 8000
   },
 
   features: {
