@@ -1,0 +1,692 @@
+/* 一线员工课件的一屏 = 一个页面骨架
+ * ---------------------------------------------------------------
+ * 四种屏型（由 frontline.config.js 的 kind 决定）：
+ *   illustration  正式插画（4:3 大图）
+ *   scene         内联 SVG 插画（16:9）；配置里给了 image 且文件存在时自动换成那张图
+ *   phone         手机端工单界面（实际操作），画法在 components/frontline-phone.js
+ *   success       操作成功页
+ *
+ * 每屏的固定结构：进度 → 标题 → 画面 → 一句说明 → 讲解 → 主操作。
+ * 页面只负责摆放，一句文案都不写在这里。
+ */
+window.HKR = window.HKR || {};
+HKR.components = HKR.components || {};
+
+(function () {
+  var ARROW =
+    '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11.2" /><path d="m11.2 5.8 4.2 4.2-4.2 4.2" /></svg>';
+
+  /* 讲解录音：同一时间只放一条，换屏就停。
+     同一屏内重画（分步点框）不掐断 —— 不然点完框刚起的录音马上被重画停掉 */
+  var audioEl = null;
+  var lastScreenId = null;
+  /* 自动播放：进一屏 0.5 秒后自己播这一屏的讲解；同一屏只自动播一次，
+     她想再听就点按钮（点了就是正常播放，不受这里影响） */
+  var autoPlayTimer = null;
+  var autoPlayedScreenId = null;
+  /* 最近一次“她真的点了屏幕”的时间：用来判断这次换屏能不能立刻播 */
+  var lastGestureAt = 0;
+  var autoBlockedHinted = false;
+  if (document && document.addEventListener) {
+    var markGesture = function () {
+      lastGestureAt = Date.now();
+    };
+    ['pointerdown', 'touchstart', 'mousedown', 'click', 'keydown'].forEach(function (type) {
+      document.addEventListener(type, markGesture, true);
+    });
+  }
+
+  function stopAudio() {
+    if (!audioEl) return;
+    try {
+      audioEl.pause();
+      audioEl.currentTime = 0;
+    } catch (error) {
+      /* 播放器还没加载完就换屏，忽略 */
+    }
+    audioEl = null;
+  }
+
+  function playAudio(screen, button, ui, options) {
+    var auto = !!(options && options.auto);
+    stopAudio();
+    var el = new Audio();
+    var label = ui.$('.frontline-audio__label', button);
+
+    function reset() {
+      button.setAttribute('data-audio-state', 'idle');
+      if (label) label.textContent = '再听一遍';
+    }
+
+    el.preload = 'auto';
+    el.addEventListener('ended', function () {
+      markHeard(el.src);
+      reset();
+    });
+    el.addEventListener('error', function () {
+      reset();
+      ui.toast('这一屏的录音没加载出来，先看画面。', { variant: 'note', duration: 2400 });
+    });
+    el.src = screen.audioSrc;
+    audioEl = el;
+
+    var played = el.play();
+    if (played && typeof played.catch === 'function') {
+      played.catch(function (error) {
+        reset();
+        if (auto) {
+          /* 自动播放被手机拦了（iPhone 微信基本都会拦）：不弹错，让按钮"跳一下"提示她点，
+             整场只轻声提示一次，免得每屏都弹 */
+          button.classList.add('is-nudge');
+          if (label) label.textContent = '点一下听讲解';
+          if (!autoBlockedHinted) {
+            autoBlockedHinted = true;
+            ui.toast('点一下喇叭，就能听讲解。', { variant: 'note', duration: 2600 });
+          }
+          if (window.console && window.console.info) {
+            window.console.info(
+              '[audio] 自动播放被浏览器拦下（' + ((error && error.name) || 'blocked') + '），点播放键即可。'
+            );
+          }
+          return;
+        }
+        ui.toast('录音没能播放，可以点一下再试。', { variant: 'note', duration: 2400 });
+      });
+    }
+    button.classList.remove('is-nudge');
+    button.setAttribute('data-audio-state', 'playing');
+    if (label) label.textContent = '正在播放…';
+  }
+
+  /* 分步台词（第 4 屏）：点完一个框，播这个框对应的那一句。
+     没有按钮状态要管，播完就完；她要是连着点，上一条会被下一条顶掉 */
+  function playStepAudio(step, ui) {
+    if (!step || !step.audioSrc) return;
+    stopAudio();
+    var el = new Audio();
+    el.preload = 'auto';
+    el.addEventListener('ended', function () {
+      markHeard(el.src);
+    });
+    el.addEventListener('error', function () {
+      ui.toast('这一步的录音没加载出来，先看画面。', { variant: 'note', duration: 2400 });
+    });
+    el.src = step.audioSrc;
+    audioEl = el;
+    var played = el.play();
+    if (played && typeof played.catch === 'function') {
+      played.catch(function () {
+        /* 微信偶尔拦手势后的连播：不打断她，界面文字仍然在给指引 */
+      });
+    }
+  }
+
+  /* ---------- 「先听完再点」：分步屏（第 4 屏）的闸门 ----------
+   * 一段讲解第一次还没播完时，点哪儿都不往下一步走，只提醒她先听；
+   * 播完一遍之后再点就随便点（包括重新播放时点别处也能继续）。
+   * 录音要是根本没播起来（手机拦了自动播放），闸门不生效，避免她点不动。 */
+  var heardSrcs = {};
+  var lastGateToastAt = 0;
+
+  function markHeard(src) {
+    if (src) heardSrcs[src] = true;
+  }
+
+  function firstPlayStillRunning() {
+    if (!audioEl) return false;
+    if (heardSrcs[audioEl.src]) return false; // 已经完整听过一遍
+    return audioEl.paused === false && audioEl.ended !== true;
+  }
+
+  function blockedByFirstPlay(ui) {
+    if (!firstPlayStillRunning()) return false;
+    var now = Date.now();
+    if (now - lastGateToastAt > 1600) {
+      lastGateToastAt = now;
+      ui.toast('先听完这一段，再往下点。', { variant: 'note', duration: 1600 });
+    }
+    return true;
+  }
+
+  /* 三个字段的热区：一次只出一个框（点完一个才出下一个）。
+     已经点过的框变绿勾，当前这个带序号、会呼吸；还没轮到的不渲染。 */
+  function spotsMarkup(screen, ctx, ui) {
+    var seen = (ctx.store.getState().frontline.fields_seen || []).length;
+    return screen.steps
+      .map(function (step, index) {
+        if (index > seen) return '';
+        var isCurrent = index === seen;
+        var style =
+          'top:' + step.top + '%;height:' + step.height + '%;left:3.2%;width:93.6%';
+        return ui.html`
+          <span
+            class="fl-spot ${ui.raw(isCurrent ? 'is-current' : 'is-seen')}"
+            ${ui.raw(isCurrent ? 'data-action="fl-step" role="button" tabindex="0"' : '')}
+            style="${style}"
+            aria-label="${step.label}"
+          >
+            <span class="fl-spot__index">${isCurrent ? String(index + 1) : '✓'}</span>
+          </span>
+        `;
+      })
+      .join('');
+  }
+
+  function bodyMarkup(screen, ui, ctx, hintText) {
+    if (screen.kind === 'phone') {
+      return '<div class="frontline-scene__phone" data-role="fl-phone"></div>';
+    }
+
+    /* 真截图 + 手机外框：这张截图本身就是一整块手机屏（自带状态栏和底栏），
+       外面只补一圈机身，让阿姨觉得「这就是她手机上的一屏」 */
+    if (screen.kind === 'screenshot') {
+      var hasSteps = !!(screen.steps && screen.steps.length);
+      var hasSpot = !!screen.spot;
+      var seenCount = (ctx.store.getState().frontline.fields_seen || []).length;
+      /* 三个框都点过之后（例如她退回来再看这一屏）：图恢复成可点，点一下直接往下走，
+         不再给底部按钮 —— 底部只留一个「往前走」的入口，交给手机本身 */
+      var allSeen = hasSteps && seenCount >= screen.steps.length;
+      /* 收尾屏（tail）的图不用点：往前走靠手机下面那两个按钮 */
+      var staticImg = (hasSteps && !allSeen) || hasSpot || screen.tail === 'replay';
+
+      /* 热区：橙框（第 5 屏「领取」）或分步框（第 4 屏三个字段） */
+      var spotsHtml = '';
+      if (hasSpot) {
+        spotsHtml = ui.html`
+          <span
+            class="fl-spot fl-spot--brand is-current"
+            data-action="${screen.spotAction === 'solve' ? 'fl-solve' : 'fl-claim'}"
+            role="button"
+            tabindex="0"
+            style="top:${screen.spot.top}%;height:${screen.spot.height}%;left:${screen.spot.left}%;width:${screen.spot.width}%"
+            aria-label="${screen.spot.label}"
+          ></span>
+        `;
+      } else if (hasSteps) {
+        spotsHtml = spotsMarkup(screen, ctx, ui);
+      }
+
+      /* 引导箭头：第 3 屏指向那条工单；第 5 屏指向「领取」，并且箭头本身也能点 */
+      var guideTappable = !!(screen.claimOnTap && screen.spot);
+      var guideHtml = screen.showGuide
+        ? ui.html`
+            <span
+              class="fl-guide${ui.raw(guideTappable ? ' is-tappable' : '')}"
+              ${ui.raw(guideTappable ? 'data-action="fl-claim" role="button" tabindex="0" aria-label="领取"' : 'aria-hidden="true"')}
+              ${ui.raw(screen.guideTop ? 'style="top:' + screen.guideTop + '%"' : '')}
+            >
+              <svg class="fl-guide__arrow" viewBox="0 0 48 58" focusable="false">
+                <path d="M24 55.5 5.5 31h11.6V2.5h13.8V31h11.6z" />
+              </svg>
+            </span>
+          `
+        : '';
+
+      /* 铺满模式：机身按原图比例占满整块高度；标题压在屏内上沿，说明可按屏去掉 */
+      if (screen.fill) {
+        return ui.html`
+          <div class="fl-fill-stage">
+            <div class="fl-device fl-device--fill" style="aspect-ratio:${screen.imageWidth} / ${screen.imageHeight}">
+              <div class="fl-device__screen">
+                <img
+                  class="fl-device__img is-fill${ui.raw(staticImg ? ' is-static' : '')}"
+                  ${ui.raw(staticImg ? '' : 'data-action="fl-open" role="button" tabindex="0"')}
+                  src="${screen.image}"
+                  alt="${screen.imageAlt}"
+                  width="${screen.imageWidth}"
+                  height="${screen.imageHeight}"
+                  decoding="async"
+                />
+                <div
+                  class="fl-device__bar"
+                  ${ui.raw(screen.titleHeight ? 'style="height:' + screen.titleHeight + '%"' : '')}
+                >
+                  <p class="fl-device__title">${screen.title}</p>
+                  ${ui.raw(
+                    screen.audioSpot
+                      ? ''
+                      : ui.html`<button class="fl-device__audio" type="button" data-action="frontline-audio" aria-label="播放讲解">
+                          <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                            <path d="M7 13h5l6-5v16l-6-5H7z" />
+                            <path d="M22.5 12.2c2.2 2.1 2.2 5.5 0 7.6" />
+                            <path d="M26 9c4 3.8 4 10.2 0 14" />
+                          </svg>
+                        </button>`
+                  )}
+                </div>
+                ${ui.raw(
+                  screen.audioSpot
+                    ? ui.html`<button
+                        class="fl-device__audio fl-device__audio--float"
+                        type="button"
+                        data-action="frontline-audio"
+                        aria-label="播放讲解"
+                        style="left:${screen.audioSpot.left}%;top:${screen.audioSpot.top}%"
+                      >
+                        <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                          <path d="M7 13h5l6-5v16l-6-5H7z" />
+                          <path d="M22.5 12.2c2.2 2.1 2.2 5.5 0 7.6" />
+                          <path d="M26 9c4 3.8 4 10.2 0 14" />
+                        </svg>
+                      </button>`
+                    : ''
+                )}
+                ${ui.raw(screen.hideHint ? '' : ui.html`<p class="fl-device__hint">${hintText}</p>`)}
+                ${ui.raw(spotsHtml)}
+                ${ui.raw(guideHtml)}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      return ui.html`
+        <div class="fl-device">
+          <div class="fl-device__screen">
+            <img
+              class="fl-device__img${ui.raw(staticImg ? ' is-static' : '')}"
+              ${ui.raw(staticImg ? '' : 'data-action="fl-open" role="button" tabindex="0"')}
+              src="${screen.image}"
+              alt="${screen.imageAlt}"
+              width="${screen.imageWidth}"
+              height="${screen.imageHeight}"
+              decoding="async"
+            />
+            ${ui.raw(spotsHtml)}
+            ${ui.raw(guideHtml)}
+          </div>
+        </div>
+      `;
+    }
+
+    /* 关注公众号（最后一屏）：二维码 + 「长按识别」。
+     * 现在放两张并排（一张收工单、一张报障），下面各配一句说明。 */
+    if (screen.kind === 'qr') {
+      var codes = screen.qrList || [
+        { image: screen.image, alt: screen.imageAlt, name: screen.qrName || '', role: '' }
+      ];
+      var codesHtml = codes
+        .map(function (code) {
+          return ui.html`
+            <figure class="fl-qr__item">
+              <div class="fl-qr__card">
+                <img class="fl-qr__img" src="${code.image}" alt="${code.alt}" decoding="async" />
+              </div>
+              <figcaption class="fl-qr__name">
+                ${code.name}
+                ${ui.raw(code.role ? '<span class="fl-qr__role">' + ui.escapeHtml(code.role) + '</span>' : '')}
+              </figcaption>
+            </figure>
+          `;
+        })
+        .join('');
+      var notesHtml = (screen.qrNotes || [])
+        .map(function (note) {
+          return '<p class="fl-qr__note">' + ui.escapeHtml(note) + '</p>';
+        })
+        .join('');
+
+      return ui.html`
+        <div class="fl-qr">
+          <div class="fl-qr__pair${ui.raw(codes.length > 1 ? ' is-pair' : '')}">${ui.raw(codesHtml)}</div>
+          <p class="fl-qr__hint">${screen.qrHint || '长按图片 → 识别图中二维码'}</p>
+          ${ui.raw(notesHtml ? '<div class="fl-qr__notes">' + notesHtml + '</div>' : '')}
+        </div>
+      `;
+    }
+
+    if (screen.kind === 'success') {
+      return ui.html`
+        <div class="fl-success" role="status">
+          <span class="fl-success__badge" aria-hidden="true">✓</span>
+          <p class="fl-success__title">${screen.successTitle}</p>
+          <p class="fl-success__desc">${screen.successDesc}</p>
+        </div>
+      `;
+    }
+
+    if (screen.kind === 'scene') {
+      return '<div class="frontline-scene__figure frontline-scene__figure--art" data-role="fl-scene"></div>';
+    }
+
+    return ui.html`
+      <figure class="frontline-scene__figure">
+        <img
+          class="frontline-scene__image"
+          src="${screen.image}"
+          alt="${screen.imageAlt}"
+          width="1440"
+          height="1080"
+          decoding="async"
+          fetchpriority="high"
+        />
+      </figure>
+    `;
+  }
+
+  function actionMarkup(screen, ui, ctx) {
+    /* 三个字段的屏：入口就是点框，底部一律不给按钮；三个都点完后点手机继续 */
+    if (screen.steps && screen.steps.length) return '';
+
+    /* 收尾屏：再看一遍 / 结束预习（铺满模式下也照样给，只是手机会被压得矮一点） */
+    if (screen.tail === 'replay') {
+      return ui.html`
+        <div class="frontline-scene__action frontline-scene__tail">
+          <button class="btn btn--navy btn--lg frontline-scene__next" type="button" data-action="frontline-replay">
+            <span>再看一遍</span>
+            <span class="btn__arrow" aria-hidden="true">${ui.raw(ARROW)}</span>
+          </button>
+          <button class="linkbtn" type="button" data-action="frontline-exit">结束预习</button>
+        </div>
+      `;
+    }
+
+    /* 这一屏的入口在手机上（点工单），就不再给底部按钮，免得一屏两个「往前走」 */
+    if (screen.hideNext) return '';
+
+    if (screen.kind === 'phone') {
+      if (screen.tail !== 'replay') return '';
+      return ui.html`
+        <div class="frontline-scene__action frontline-scene__tail">
+          <button class="btn btn--navy btn--lg frontline-scene__next" type="button" data-action="frontline-replay">
+            <span>再看一遍</span>
+            <span class="btn__arrow" aria-hidden="true">${ui.raw(ARROW)}</span>
+          </button>
+          <button class="linkbtn" type="button" data-action="frontline-exit">结束预习</button>
+        </div>
+      `;
+    }
+
+    return ui.html`
+      <div class="frontline-scene__action">
+        <button class="btn btn--navy btn--lg frontline-scene__next" type="button" data-action="frontline-next">
+          <span>${screen.nextLabel || '下一步'}</span>
+          <span class="btn__arrow" aria-hidden="true">${ui.raw(ARROW)}</span>
+        </button>
+      </div>
+    `;
+  }
+
+  function render(host, ctx, options) {
+    var ui = ctx.ui;
+    var screen = options.config;
+    var total = HKR.config.frontline.totalSteps;
+    var titleId = screen.id + '-title';
+    /* 有 steps 的屏，说明跟着「当前第几个框」走：先看什么、再看什么，一句一句给 */
+    var captionText = screen.caption;
+    if (screen.steps && screen.steps.length) {
+      var seenSteps = (ctx.store.getState().frontline.fields_seen || []).length;
+      captionText =
+        seenSteps >= screen.steps.length
+          ? screen.doneHint || screen.caption
+          : screen.steps[seenSteps].hint;
+    }
+    /* 说明留空就不输出这一段（二维码那屏改用自己的两行大字说明） */
+    var captionHtml = captionText
+      ? ui.html`<p class="frontline-scene__caption">${captionText}</p>`
+      : '';
+    /* 手机特别高的那几屏，说明要放到手机上边，否则被挤到屏幕外面（见 captionFirst） */
+    var captionFirst = screen.captionFirst === true;
+    /* 铺满模式：机身上下压着标题和说明，所以外面那套标题 / 说明 / 讲解都不再输出 */
+    var isFill = screen.fill === true;
+
+    /* 换屏才停录音；同一屏重画（分步点框）不停 */
+    var enteringScreen = lastScreenId !== screen.id;
+    if (enteringScreen) {
+      stopAudio();
+      autoPlayedScreenId = null;
+    }
+    lastScreenId = screen.id;
+
+    ui.setHtml(
+      host,
+      ui.html`
+        <section
+          class="frontline-scene ${ui.raw(isFill ? 'frontline-scene--fill' : '')}"
+          data-step="${screen.step}"
+          data-kind="${screen.kind}"
+          aria-labelledby="${titleId}"
+        >
+          <div class="frontline-scene__progress">
+            <div class="frontline-scene__progress-head">
+              <span>第 ${screen.step} 步</span>
+              <span>共 ${total} 步</span>
+            </div>
+            <div
+              class="frontline-scene__progress-track"
+              role="progressbar"
+              aria-label="一线员工预习进度"
+              aria-valuemin="0"
+              aria-valuemax="${total}"
+              aria-valuenow="${screen.step}"
+            >
+              <span style="width:${(screen.step / total) * 100}%"></span>
+            </div>
+          </div>
+
+          ${ui.raw(
+            isFill
+              ? ''
+              : ui.html`<header class="frontline-scene__head">
+                  <h1 class="frontline-scene__title" id="${titleId}">${screen.title}</h1>
+                </header>`
+          )}
+
+          ${isFill || !captionFirst ? '' : ui.raw(captionHtml)}
+
+          ${ui.raw(bodyMarkup(screen, ui, ctx, captionText))}
+
+          ${isFill || captionFirst ? '' : ui.raw(captionHtml)}
+
+          ${ui.raw(
+            screen.hideAudio || isFill
+              ? ''
+              : ui.html`<div class="frontline-scene__voice">${ui.raw(
+                  HKR.components.frontlineAudio.render({ label: '播放讲解' })
+                )}</div>`
+          )}
+
+          ${ui.raw(actionMarkup(screen, ui, ctx))}
+        </section>
+      `
+    );
+
+    /* 手机端工单界面：它自己绑操作（点开 / 看字段 / 领取 / 解决），画面由配置的 stage 决定 */
+    if (screen.kind === 'phone') {
+      var phoneSlot = ui.$('[data-role="fl-phone"]', host);
+      if (phoneSlot) HKR.components.frontlinePhone.render(phoneSlot, ctx, screen);
+    }
+
+    /* 插画：有正式插画的屏直接上图。
+     * 以前的写法是「先画内联 SVG（旧版画着猫的那套插画），等图片 onload 再换掉」，
+     * 结果就是第 6/7/8 屏会先闪一下旧插画。现在改成直接上图，只有图加载失败时才退回 SVG。 */
+    if (screen.kind === 'scene') {
+      var sceneSlot = ui.$('[data-role="fl-scene"]', host);
+      if (sceneSlot) {
+        if (screen.image) {
+          ui.setHtml(
+            sceneSlot,
+            '<img class="frontline-scene__image" src="' +
+              ui.escapeHtml(screen.image) +
+              '" alt="' +
+              ui.escapeHtml(screen.imageAlt) +
+              '" width="1440" height="1080" decoding="async" />'
+          );
+          var artImg = sceneSlot.querySelector('img');
+          if (artImg) {
+            artImg.addEventListener('error', function () {
+              /* 图没了才退回内联 SVG，不报错、不留白 */
+              HKR.components.illustration.render(sceneSlot, { scene: screen.scene, alt: screen.imageAlt });
+            });
+          }
+        } else {
+          HKR.components.illustration.render(sceneSlot, { scene: screen.scene, alt: screen.imageAlt });
+        }
+      }
+    }
+
+    ui.delegate(host, '[data-action="frontline-audio"]', 'click', function (event, target) {
+      ctx.analytics.track('frontline_audio_requested', { page_id: screen.id });
+      if (!screen.audioSrc) {
+        ui.toast('这一屏的讲解录音还在制作，先看画面。', { variant: 'note', duration: 2400 });
+        return;
+      }
+      playAudio(screen, target, ui);
+    });
+
+    /* 普通版式的「下一步」：先把这一屏的记录写上，再往下走 */
+    function advance() {
+      if (screen.markTicketOpened) ctx.store.openFrontlineTicket();
+      ctx.analytics.track('frontline_scene_next', { page_id: screen.id });
+      if (screen.nextPageId) {
+        ctx.go(screen.nextPageId);
+        return;
+      }
+      ui.toast('这一屏是最后一屏了。', { variant: 'note', duration: 2200 });
+    }
+
+    ui.delegate(host, '[data-action="frontline-next"]', 'click', function () {
+      advance();
+    });
+
+    /* 点手机里的工单（红框那一块，实际是整张屏都可点，手滑一点也不会点空） */
+    ui.delegate(host, '[data-action="fl-open"]', 'click', function () {
+      advance();
+    });
+
+    ui.delegate(host, '[data-action="fl-open"]', 'keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) {
+        event.preventDefault();
+        advance();
+      }
+    });
+
+    if (screen.claimOnTap || screen.spotAction === 'solve') {
+      /* 第 5 屏：点橙框 = 领取；第 9 屏：点橙框 = 解决 */
+      var isSolve = screen.spotAction === 'solve';
+      var act = function () {
+        if (isSolve) {
+          ctx.store.solveFrontlineTicket();
+          ctx.analytics.track('frontline_ticket_solved', { page_id: screen.id });
+          ui.toast('工单已解决。', { variant: 'ok', duration: 2600 });
+        } else {
+          ctx.store.claimFrontlineTicket();
+          ctx.analytics.track('frontline_ticket_claimed', { page_id: screen.id });
+          ui.toast('领取成功，这张工单归你处理。', { variant: 'ok', duration: 2600 });
+        }
+        ctx.go(screen.nextPageId);
+      };
+
+      ui.delegate(host, isSolve ? '[data-action="fl-solve"]' : '[data-action="fl-claim"]', 'click', function () {
+        act();
+      });
+      ui.delegate(host, isSolve ? '[data-action="fl-solve"]' : '[data-action="fl-claim"]', 'keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) {
+          event.preventDefault();
+          act();
+        }
+      });
+    }
+
+    /* 三个字段的屏：点当前这个框 → 记下已看 → 播这一步的录音 → 重画出下一个框。
+       第三个框点完不再直接跳下一屏：留在本屏把那句放完，
+       底下换成「三个都看完了，接着去领取」，点一下手机再走 */
+    function stepForward() {
+      if (!screen.steps || !screen.steps.length) return;
+      /* 这一段讲解第一次还没听完，就先不让她点走 */
+      if (blockedByFirstPlay(ui)) return;
+      var seen = (ctx.store.getState().frontline.fields_seen || []).length;
+      if (seen >= screen.steps.length) {
+        ctx.go(screen.nextPageId);
+        return;
+      }
+      var step = screen.steps[seen];
+      ctx.store.seeFrontlineField(step.key);
+      ctx.analytics.track('frontline_field_seen', { page_id: screen.id, field: step.key });
+      playStepAudio(step, ui);
+      ctx.go(screen.id);
+    }
+
+    ui.delegate(host, '[data-action="fl-step"]', 'click', function () {
+      stepForward();
+    });
+
+    ui.delegate(host, '[data-action="fl-step"]', 'keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) {
+        event.preventDefault();
+        stepForward();
+      }
+    });
+
+    /* 三个字段的屏：整块手机屏都能点。
+     * 阿姨不一定看得出来那个灰框能点，所以点画面任何位置都算「看下一个」；
+     * 点在按钮 / 橙框 / 播放键上时不重复走一步，交给它们自己处理。 */
+    if (screen.steps && screen.steps.length) {
+      ui.delegate(host, '.fl-device__screen', 'click', function (event) {
+        if (event.target && event.target.closest && event.target.closest('[data-action]')) return;
+        stepForward();
+      });
+    }
+
+    /* 屏 11：再看一遍 —— 只清这一版演示工单，不动别的记录 */
+    ui.delegate(host, '[data-action="frontline-replay"]', 'click', function () {
+      ctx.store.resetFrontlineTicket();
+      ctx.analytics.track('frontline_replay', { page_id: screen.id });
+      ctx.go(HKR.config.frontline.screens[0].id);
+    });
+
+    ui.delegate(host, '[data-action="frontline-exit"]', 'click', function () {
+      ctx.analytics.track('frontline_exit', { page_id: screen.id });
+      ctx.go('roles');
+    });
+
+    /* 进这一屏 0.5 秒后自动播讲解（同一屏只自动播一次） */
+    scheduleAutoPlay(screen, host, ui, ctx);
+  }
+
+  /* 自动播放：进屏停 0.5 秒，等画面先出来，再自己播这一屏的讲解。
+   * 手机（尤其 iPhone 微信）常常拦自动播放，拦了就把播放键「跳一下」提示她点，不弹错。
+   * 想关掉：app.config.js 里 features.autoPlayAudio = false。 */
+  function scheduleAutoPlay(screen, host, ui, ctx) {
+    var features = (HKR.config.app && HKR.config.app.features) || {};
+    if (features.autoPlayAudio === false) return;
+    if (!screen || !screen.audioSrc) return;
+    if (autoPlayedScreenId === screen.id) return;
+
+    /* 第 4 屏这种分步屏：已经在看第二、第三个框了，就别用整屏录音盖掉分步录音 */
+    if (screen.steps && screen.steps.length) {
+      var seen = (ctx.store.getState().frontline.fields_seen || []).length;
+      if (seen > 0) return;
+    }
+
+    var button = ui.$('[data-action="frontline-audio"]', host);
+    if (!button) return;
+
+    autoPlayedScreenId = screen.id;
+    window.clearTimeout(autoPlayTimer);
+
+    function tryPlayNow() {
+      var stillThere = button.isConnected !== undefined ? button.isConnected : document.body.contains(button);
+      if (!stillThere) return;
+      /* 这中间她自己点了播放，就别重复播 */
+      if (button.getAttribute('data-audio-state') === 'playing') return;
+      playAudio(screen, button, ui, { auto: true });
+    }
+
+    /* iPhone 微信 / Safari 只认「点下去那一刻」，隔 0.5 秒再播必被拦。
+     * 所以：如果这次换屏本来就是她点出来的（1.2 秒内有手势），就在同一个任务里立刻播；
+     * 没有手势（比如打开链接直接续到这一屏）才等 0.5 秒——这类本来就播不了，靠按钮提示。 */
+    if (Date.now() - lastGestureAt < 1200) {
+      tryPlayNow();
+      return;
+    }
+    autoPlayTimer = window.setTimeout(tryPlayNow, 500);
+  }
+
+  HKR.components.frontlineScene = {
+    render: render,
+    /* 换页时由路由调用：离开这一屏就停掉还在播的讲解
+     * （同一屏重画不会走这里，所以分步录音不会被掐断） */
+    stopAudio: stopAudio
+  };
+})();
