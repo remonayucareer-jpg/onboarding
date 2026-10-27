@@ -77,3 +77,5 @@ HKR.config.app.officialAccounts = [
   }
 ];
 
+HKR.config.api = HKR.config.app.api; // 修复 report.js 读取路径不一致的问题
+
