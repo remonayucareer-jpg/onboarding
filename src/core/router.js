@@ -229,17 +229,43 @@ HKR.core = HKR.core || {};
     });
 
     var initial = fromHash();
+    var resumedFrom = null;
     if (!initial) {
-      /* 打开链接（没有 #/页面）固定从角色入口开始。管理员续学仍然只在欢迎页显式出现，
-       * 不会因为上次停在哪里就直接跳过角色选择。 */
-      var resumable = resumeTarget();
-      if (resumable) analytics.track('session_resume_available', { page_id: resumable.id });
-      initial = 'roles';
+      /* 打开链接（没有 #/页面）：
+       * - 一线员工：如果本机还留着上次的进度，直接回到上次停的那一页（她是用链接反复进来的）；
+       * - 其他角色（管理员）：仍然固定从角色入口开始，续学只在欢迎页显式出现。 */
+      var snapshot = store.getState();
+      var lastPage = snapshot.session.last_page_id;
+      var canResumeFrontline =
+        lastPage && lastPage !== 'roles' && indexOf(lastPage) >= 0 && trackOf(lastPage) === 'frontline';
+
+      if (canResumeFrontline) {
+        initial = lastPage;
+        resumedFrom = lastPage;
+      } else {
+        var resumable = resumeTarget();
+        if (resumable) analytics.track('session_resume_available', { page_id: resumable.id });
+        initial = 'roles';
+      }
       window.location.replace('#' + '/' + initial);
     } else {
       analytics.track('session_resume', { page_id: initial });
     }
     render(initial, { force: true, keepScroll: !!(options && options.keepScroll) });
+
+    if (resumedFrom) {
+      analytics.track('session_resume_auto', { page_id: resumedFrom });
+      showResumeToast();
+    }
+  }
+
+  /* 「接着上次继续」的提示：只出现一次，不挡任何操作 */
+  function showResumeToast() {
+    var host = document.body;
+    if (!host || !HKR.core.ui || !HKR.core.ui.toast) return;
+    window.setTimeout(function () {
+      HKR.core.ui.toast('接着上次继续', { variant: 'note', duration: 2200 });
+    }, 400);
   }
 
   HKR.core.router = {

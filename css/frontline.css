@@ -568,45 +568,38 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   text-align: center;
 }
 
-/* ---------- 指向红框的引导：「点这里」+ 向下箭头 ----------
- * 位置按截图像素换算：红框在整张图里 top 56.6%，所以标签落在 46% 附近，箭头尖正好压在红框上沿。
+/* ---------- 指向红框的引导：一支大的红色箭头 ----------
+ * 位置按截图像素换算：红框在整张图里 top 56.6%，箭头底端落在 56% 附近、正好压在红框上沿。
+ * 不放文字（小字在手机上根本看不清），靠"大 + 红 + 上下动"来指。
  * 不挡点击（pointer-events: none）：点哪儿都还是点那张截图。
  */
 
 .fl-guide {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 44.5%;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  display: block;
   pointer-events: none;
-  animation: fl-guide-bob 1.8s ease-in-out infinite;
-}
-
-.fl-guide__label {
-  padding: 3px 11px;
-  border-radius: 999px;
-  background: var(--navy);
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: 1.4;
-  white-space: nowrap;
-  box-shadow: 0 4px 10px rgba(23, 42, 63, 0.28);
+  animation: fl-guide-bob 1.5s ease-in-out infinite;
 }
 
 .fl-guide__arrow {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--navy);
-  stroke-width: 2.4;
-  stroke-linecap: round;
+  display: block;
+  width: 62px;
+  height: 74px;
+  fill: #ef4136; /* 和截图里那个红框同一个红系 */
+  stroke: #fff;
+  stroke-width: 2.6;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.28));
+}
+
+/* 箭头本身也能点（第 5 屏：点箭头 = 点「领取」），免得她对着箭头戳半天没反应 */
+.fl-guide.is-tappable {
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes fl-guide-bob {
@@ -615,7 +608,7 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
     transform: translateX(-50%) translateY(0);
   }
   50% {
-    transform: translateX(-50%) translateY(4px);
+    transform: translateX(-50%) translateY(9px);
   }
 }
 
@@ -682,9 +675,11 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 }
 
 /* 橙框：只有「需要她真的点一下」的那一处才用（第 5 屏的领取）。
- * 项目里橙色一直是「要点的那个东西」，这里和主按钮同族，但用描边不用实底，避免抢走截图本身。 */
+ * 项目里橙色一直是「要点的那个东西」，这里和主按钮同族，但用描边不用实底，避免抢走截图本身。
+ * 第 5 屏的框加粗到 4px（2px 在手机上太细，看不出"这里要点"），再叠一支红箭头，双层提示。 */
 .fl-spot--brand {
   border-color: var(--brand);
+  border-width: 4px;
   background: rgba(255, 107, 26, 0.08);
   animation: fl-spot-pulse-brand 1.8s ease-out infinite;
 }
@@ -1118,14 +1113,21 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   color: var(--ink-2);
 }
 
+.fl-quiz__done-note {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
 .fl-quiz--done .fl-quiz__action {
   width: 100%;
   margin-top: 8px;
 }
 
 /* ==================== 关注公众号（最后一屏） ====================
- * 二维码放在一张白卡上、四周留足白边（微信长按识别要求二维码周围是浅色），
- * 卡上压一个「长按关注」的小标签，卡下一行「长按图片 → 识别图中二维码」。
+ * 两张二维码并排（左收工单、右报障），各配一个名字 + 一行角色说明；
+ * 二维码放在白卡上、四周留足白边（微信长按识别要求二维码周围是浅色）。
  */
 
 .fl-qr {
@@ -1136,43 +1138,81 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   padding: 4px 0 0;
 }
 
+.fl-qr__pair {
+  display: grid;
+  width: 100%;
+  gap: 12px;
+  grid-template-columns: minmax(0, 220px);
+  justify-content: center;
+}
+
+.fl-qr__pair.is-pair {
+  grid-template-columns: 1fr 1fr;
+}
+
+.fl-qr__item {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 0;
+}
+
 .fl-qr__card {
-  position: relative;
-  padding: 18px;
-  border-radius: 16px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 14px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(23, 42, 63, 0.12);
+  box-shadow: 0 6px 18px rgba(23, 42, 63, 0.12);
 }
 
 .fl-qr__img {
   display: block;
-  width: 200px;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
-.fl-qr__badge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: var(--navy);
-  color: #fff;
-  font-size: 12.5px;
+.fl-qr__name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.5;
-  white-space: nowrap;
-  box-shadow: 0 3px 8px rgba(23, 42, 63, 0.24);
+  line-height: 1.4;
+  color: var(--navy-deep);
+  text-align: center;
+}
+
+.fl-qr__role {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
 }
 
 .fl-qr__hint {
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.5;
   color: var(--ink-2);
   text-align: center;
+}
+
+/* 两条说明沿用「说明文字」那套字体（19px / 1.65 / 500），不再用小号带点的列表 */
+.fl-qr__notes {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.fl-qr__note {
+  margin: 0;
+  color: var(--ink);
+  font-size: 19px;
+  line-height: 1.65;
+  font-weight: 500;
+  text-wrap: pretty;
 }
 
 /* ==================== 操作成功（屏 10） ====================

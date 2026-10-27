@@ -91,7 +91,7 @@ HKR.config = HKR.config || {};
       /* 铺满模式：机身占满整块内容区，标题和说明压在手机屏上下两端，图片轻微压扁换字号 */
       fill: true,
       titleHeight: 10.2,
-      /* 红框上沿压一个「点这里 ↓」的引导 */
+      /* 红框上沿压一支大的红色箭头（没有文字，小字在手机上看不清） */
       showGuide: true,
       /* 这一屏的「下一步」= 点开工单，要在本机记录里留一笔 */
       markTicketOpened: true,
@@ -150,6 +150,9 @@ HKR.config = HKR.config || {};
       /* 橙色框的位置按截图量：按钮 2215–2340（图高 2376），横向 46–1035（图宽 1080） */
       spot: { top: 92.8, height: 6.1, left: 3.6, width: 92.8, label: '领取' },
       claimOnTap: true,
+      /* 橙框 + 红箭头双层提示：箭头尖压在「领取」上沿，箭头本身也能点 */
+      showGuide: true,
+      guideTop: 78.6,
       fill: true,
       titleHeight: 11.7,
       audioSpot: { left: 89.4, top: 77.1 },
@@ -253,13 +256,30 @@ HKR.config = HKR.config || {};
       id: 'frontline-account',
       step: 11,
       kind: 'qr',
-      title: '最后：关注公众号',
-      caption: '长按上方的二维码，关注「华客极联云」。只有关注了，新工单才会推到你手机上。',
-      script: '最后一步：长按这个二维码，关注华客极联云。只有关注了，新工单才会推到你的手机上。',
-      image: 'assets/images/frontline-account-qr.png',
-      imageAlt: '公众号「华客极联云」的二维码',
-      qrHint: '长按图片 → 识别图中二维码',
-      qrBadge: '长按关注',
+      title: '最后：关注两个公众号',
+      caption: '',
+      script:
+        '最后一步：这两个二维码都长按关注一下。左边这个收新工单，右边这个是报障用的。具体怎么用，上课的时候老师会带着讲一遍。',
+      /* 两个二维码并排：左「华客极联云」收工单，右「华客微服务」做报障 */
+      qrList: [
+        {
+          image: 'assets/images/frontline-account-qr.png',
+          alt: '公众号「华客极联云」的二维码',
+          name: '华客极联云',
+          role: '收工单通知'
+        },
+        {
+          image: 'assets/images/frontline-account-qr-service.png',
+          alt: '公众号「华客微服务」的二维码',
+          name: '华客微服务',
+          role: '工单报障'
+        }
+      ],
+      qrHint: '长按两张二维码进行关注，课前务必完成。',
+      qrNotes: [
+        '「华客极联云」：新工单会推到这里，不关注就收不到。',
+        '「华客微服务」：工单上遇到问题，可以在这里自动报障；具体怎么用，上课时老师会带着讲一遍。'
+      ],
       audioSrc: '',
       /* 关注完先进测试说明页，再进测试 */
       nextLabel: '开始测试',
@@ -364,6 +384,8 @@ HKR.config = HKR.config || {};
     }
   };
 })();
+
+
 
 
 

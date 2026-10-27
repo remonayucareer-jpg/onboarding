@@ -118,13 +118,17 @@ HKR.components = HKR.components || {};
         spotsHtml = spotsMarkup(screen, ctx, ui);
       }
 
+      /* 引导箭头：第 3 屏指向那条工单；第 5 屏指向「领取」，并且箭头本身也能点 */
+      var guideTappable = !!(screen.claimOnTap && screen.spot);
       var guideHtml = screen.showGuide
         ? ui.html`
-            <span class="fl-guide" aria-hidden="true">
-              <span class="fl-guide__label">点这里</span>
-              <svg class="fl-guide__arrow" viewBox="0 0 24 24" focusable="false">
-                <path d="M12 3.5v12" />
-                <path d="m5.8 10.2 6.2 6.2 6.2-6.2" />
+            <span
+              class="fl-guide${ui.raw(guideTappable ? ' is-tappable' : '')}"
+              ${ui.raw(guideTappable ? 'data-action="fl-claim" role="button" tabindex="0" aria-label="领取"' : 'aria-hidden="true"')}
+              ${ui.raw(screen.guideTop ? 'style="top:' + screen.guideTop + '%"' : '')}
+            >
+              <svg class="fl-guide__arrow" viewBox="0 0 48 58" focusable="false">
+                <path d="M24 55.5 5.5 31h11.6V2.5h13.8V31h11.6z" />
               </svg>
             </span>
           `
@@ -207,22 +211,38 @@ HKR.components = HKR.components || {};
       `;
     }
 
-    /* 关注公众号（最后一屏）：一张二维码 + 一句「长按识别」，阿姨照着点就行 */
+    /* 关注公众号（最后一屏）：二维码 + 「长按识别」。
+     * 现在放两张并排（一张收工单、一张报障），下面各配一句说明。 */
     if (screen.kind === 'qr') {
+      var codes = screen.qrList || [
+        { image: screen.image, alt: screen.imageAlt, name: screen.qrName || '', role: '' }
+      ];
+      var codesHtml = codes
+        .map(function (code) {
+          return ui.html`
+            <figure class="fl-qr__item">
+              <div class="fl-qr__card">
+                <img class="fl-qr__img" src="${code.image}" alt="${code.alt}" decoding="async" />
+              </div>
+              <figcaption class="fl-qr__name">
+                ${code.name}
+                ${ui.raw(code.role ? '<span class="fl-qr__role">' + ui.escapeHtml(code.role) + '</span>' : '')}
+              </figcaption>
+            </figure>
+          `;
+        })
+        .join('');
+      var notesHtml = (screen.qrNotes || [])
+        .map(function (note) {
+          return '<p class="fl-qr__note">' + ui.escapeHtml(note) + '</p>';
+        })
+        .join('');
+
       return ui.html`
         <div class="fl-qr">
-          <div class="fl-qr__card">
-            <img
-              class="fl-qr__img"
-              src="${screen.image}"
-              alt="${screen.imageAlt}"
-              width="265"
-              height="248"
-              decoding="async"
-            />
-            <span class="fl-qr__badge">${screen.qrBadge || '长按关注'}</span>
-          </div>
+          <div class="fl-qr__pair${ui.raw(codes.length > 1 ? ' is-pair' : '')}">${ui.raw(codesHtml)}</div>
           <p class="fl-qr__hint">${screen.qrHint || '长按图片 → 识别图中二维码'}</p>
+          ${ui.raw(notesHtml ? '<div class="fl-qr__notes">' + notesHtml + '</div>' : '')}
         </div>
       `;
     }
@@ -313,7 +333,10 @@ HKR.components = HKR.components || {};
           ? screen.doneHint || screen.caption
           : screen.steps[seenSteps].hint;
     }
-    var captionHtml = ui.html`<p class="frontline-scene__caption">${captionText}</p>`;
+    /* 说明留空就不输出这一段（二维码那屏改用自己的两行大字说明） */
+    var captionHtml = captionText
+      ? ui.html`<p class="frontline-scene__caption">${captionText}</p>`
+      : '';
     /* 手机特别高的那几屏，说明要放到手机上边，否则被挤到屏幕外面（见 captionFirst） */
     var captionFirst = screen.captionFirst === true;
     /* 铺满模式：机身上下压着标题和说明，所以外面那套标题 / 说明 / 讲解都不再输出 */
@@ -497,6 +520,16 @@ HKR.components = HKR.components || {};
         stepForward();
       }
     });
+
+    /* 三个字段的屏：整块手机屏都能点。
+     * 阿姨不一定看得出来那个灰框能点，所以点画面任何位置都算「看下一个」；
+     * 点在按钮 / 橙框 / 播放键上时不重复走一步，交给它们自己处理。 */
+    if (screen.steps && screen.steps.length) {
+      ui.delegate(host, '.fl-device__screen', 'click', function (event) {
+        if (event.target && event.target.closest && event.target.closest('[data-action]')) return;
+        stepForward();
+      });
+    }
 
     /* 屏 11：再看一遍 —— 只清这一版演示工单，不动别的记录 */
     ui.delegate(host, '[data-action="frontline-replay"]', 'click', function () {

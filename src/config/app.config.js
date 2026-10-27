@@ -44,19 +44,27 @@ HKR.config.app = {
     }
   },
 
-  // 后端预留：第一版 enabled = false，全部数据只存在本机浏览器
+  // 后端上报：登记信息和交卷成绩都走 workbuddy 的中转
   api: {
     enabled: true,
-  endpoint: '',
-  identityEndpoint: 'https://hkr-training-relay.app.workbuddy.host/api/frontline/identity?sharecode=Y5UUYIKLC2',
-  resultEndpoint: '',
-  headers: {},
-  timeoutMs: 8000
+    endpoint: '', // 旧的「预习事件」上报地址，未启用
+    /* 一线员工：登记信息 / 交卷成绩 各一个地址 */
+    identityEndpoint:
+      'https://hkr-training-relay.app.workbuddy.host/api/frontline/identity?sharecode=Y5UUYIKLC2',
+    resultEndpoint:
+      'https://hkr-training-relay.app.workbuddy.host/api/frontline/result?sharecode=Y5UUYIKLC2',
+    /* 跨域不通时把 contentType 改成 'text/plain;charset=UTF-8'（简单请求，不触发预检） */
+    contentType: 'application/json;charset=UTF-8',
+    /* 中转没开 CORS 时的兜底：预检失败后改用 text/plain + no-cors 再发一次（请求能到，
+     * 但读不到回执）。等中转加上 Access-Control-Allow-Origin 后可以关掉。 */
+    fallbackNoCors: true,
+    headers: {},
+    timeoutMs: 8000
   },
 
   features: {
     showLocalRecordsPanel: true, // 完成页的「查看本次本地记录（演示用）」入口
-    resetRecordsOnOpen: true // 每次加载 index（刷新或关闭后重开）都清空本地记录；正式上线可改为 false
+    resetRecordsOnOpen: false // false = 关掉页面再打开能接着上次继续（记录留在本机 localStorage）
   }
 };
 
@@ -77,5 +85,10 @@ HKR.config.app.officialAccounts = [
   }
 ];
 
-HKR.config.api = HKR.config.app.api; // 修复 report.js 读取路径不一致的问题
+/* 修复上报读不到配置的问题：
+ * 本文件的配置挂在 HKR.config.app 下（所以接口地址实际在 HKR.config.app.api），
+ * 而 src/core/report.js 早期按 HKR.config.api 读，两边路径不一致 → 即使填了地址也不会发。
+ * 这里补一个别名（report.js 里也做了兜底读取），以后新增代码两种写法都能拿到。 */
+HKR.config.api = HKR.config.app.api;
+
 

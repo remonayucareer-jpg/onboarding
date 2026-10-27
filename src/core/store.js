@@ -115,8 +115,9 @@ HKR.core = HKR.core || {};
         revealed: false, // 当前这题是不是已经作答
         chosen: null, // 她选的那一项
         lastCorrect: false,
-        log: [], // 每题一条：{ id, chosen, correct }
-        passed: false
+        log: [], // 每次作答一条：{ index, chosen, correct }
+        passed: false,
+        reportedAt: null // 成绩上报的时间（防止刷新后重复上报）
       },
       feedback: {
         feedback_clarity: null,
@@ -553,11 +554,36 @@ HKR.core = HKR.core || {};
     return state.frontlineQuiz;
   }
 
+  /* 交卷后记一笔：保证同一份成绩只上报一次（刷新 / 重新打开不会再发一条） */
+  function markQuizReported() {
+    update(function (s) {
+      s.frontlineQuiz.reportedAt = Date.now();
+    });
+    return state.frontlineQuiz;
+  }
+
   /* 下一题：清掉作答态，题号 +1 */
   function nextQuizQuestion() {
     update(function (s) {
       var q = s.frontlineQuiz;
       q.index += 1;
+      q.revealed = false;
+      q.chosen = null;
+      q.lastCorrect = false;
+    });
+    return state.frontlineQuiz;
+  }
+
+  /* 九道题都答完还没凑够 2 题正确：这一套题重新洗牌、从第一题接着来一轮。
+   * 已答对的数量和作答明细都保留（正确率按所有作答算），只把题号和作答态归零。 */
+  function restartQuizDeck(total, optionCounts) {
+    update(function (s) {
+      var q = s.frontlineQuiz;
+      q.index = 0;
+      q.order = shuffled(total || 0);
+      q.optionOrders = (optionCounts || []).map(function (n) {
+        return shuffled(n);
+      });
       q.revealed = false;
       q.chosen = null;
       q.lastCorrect = false;
@@ -600,7 +626,8 @@ HKR.core = HKR.core || {};
         chosen: null,
         lastCorrect: false,
         log: [],
-        passed: false
+        passed: false,
+        reportedAt: null
       };
     });
     return state.frontlineQuiz;
@@ -674,9 +701,11 @@ HKR.core = HKR.core || {};
     solveFrontlineTicket: solveFrontlineTicket,
     resetFrontlineTicket: resetFrontlineTicket,
     answerQuiz: answerQuiz,
+    markQuizReported: markQuizReported,
     saveIdentity: saveIdentity,
     nextQuizQuestion: nextQuizQuestion,
     resetQuiz: resetQuiz,
+    restartQuizDeck: restartQuizDeck,
     shuffleQuiz: shuffleQuiz,
     saveFeedback: saveFeedback,
     saveOfficialAccount: saveOfficialAccount,
