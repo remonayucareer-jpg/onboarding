@@ -8,7 +8,7 @@
 index.html        入口（hash 路由：#/roles → #/frontline-identity → … → #/frontline-quiz）
 css/              样式
 src/              配置、核心逻辑、组件、页面
-assets/           图片、二维码、音频（assets/audio 目前为空）
+assets/           图片、二维码、音频（assets/audio/，由 tools/gen-audio.py 生成）
 .nojekyll         关掉 GitHub Pages 的 Jekyll 处理
 ```
 
@@ -96,6 +96,19 @@ assets/           图片、二维码、音频（assets/audio 目前为空）
 - 页面上**不会**因为上报失败弹任何提示（不打断学习）。
 - 失败时会写进浏览器控制台：`[report] identity 上报失败…`。
 - 失败的记录存在 `localStorage` 的 `hkr.report.queue.v1`，下次打开页面自动补发（最多留 60 条）。
+
+## 讲解录音
+
+- 每屏喇叭按钮播放 `assets/audio/fl-XX.mp3`；屏 4 的三个字段另有分步录音 `fl-04-1/2/3.mp3`，
+  点一个框播对应那一句（配置在 `frontline.config.js` 每屏的 `audioSrc`，分步的在 `steps[].audioSrc`）。
+- **台词台账是 `frontline.config.js` 的 `script` 字段**；改台词时：
+  1. 改 `frontline.config.js` 里的 `script`（和 `steps[].hint`）；
+  2. 同步改 `tools/gen-audio.py` 的 `LINES`（语音引擎按它生成）；
+  3. 跑 `python tools/gen-audio.py`，同名覆盖，提交即可。
+- 音色 / 语速在 `tools/gen-audio.py` 顶部的 `VOICE` / `RATE`，按 5% 一档调。
+- 屏 4 特殊流程：第三个框点完**不再直接跳下一屏**——留在本屏把分步录音放完，
+  底部说明变成「三个都看完了，接着去领取」，点手机继续。
+- 上线前注意：当前音色来自免费在线服务，**对外发布需确认商用授权**（或换有授权的音色重新生成）。
 
 ## 发布
 

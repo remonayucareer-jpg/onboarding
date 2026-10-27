@@ -16,8 +16,10 @@ HKR.components = HKR.components || {};
   var ARROW =
     '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11.2" /><path d="m11.2 5.8 4.2 4.2-4.2 4.2" /></svg>';
 
-  /* 讲解录音：同一时间只放一条，换屏就停 */
+  /* 讲解录音：同一时间只放一条，换屏就停。
+     同一屏内重画（分步点框）不掐断 —— 不然点完框刚起的录音马上被重画停掉 */
   var audioEl = null;
+  var lastScreenId = null;
 
   function stopAudio() {
     if (!audioEl) return;
@@ -58,6 +60,26 @@ HKR.components = HKR.components || {};
     }
     button.setAttribute('data-audio-state', 'playing');
     if (label) label.textContent = '正在播放…';
+  }
+
+  /* 分步台词（第 4 屏）：点完一个框，播这个框对应的那一句。
+     没有按钮状态要管，播完就完；她要是连着点，上一条会被下一条顶掉 */
+  function playStepAudio(step, ui) {
+    if (!step || !step.audioSrc) return;
+    stopAudio();
+    var el = new Audio();
+    el.preload = 'auto';
+    el.addEventListener('error', function () {
+      ui.toast('这一步的录音没加载出来，先看画面。', { variant: 'note', duration: 2400 });
+    });
+    el.src = step.audioSrc;
+    audioEl = el;
+    var played = el.play();
+    if (played && typeof played.catch === 'function') {
+      played.catch(function () {
+        /* 微信偶尔拦手势后的连播：不打断她，界面文字仍然在给指引 */
+      });
+    }
   }
 
   /* 三个字段的热区：一次只出一个框（点完一个才出下一个）。
@@ -277,7 +299,7 @@ HKR.components = HKR.components || {};
   }
 
   function actionMarkup(screen, ui, ctx) {
-    /* 三个字段的屏：点完第三个直接进下一屏，底部一律不给按钮（退回来时点手机即可） */
+    /* 三个字段的屏：入口就是点框，底部一律不给按钮；三个都点完后点手机继续 */
     if (screen.steps && screen.steps.length) return '';
 
     /* 收尾屏：再看一遍 / 结束预习（铺满模式下也照样给，只是手机会被压得矮一点） */
@@ -342,7 +364,9 @@ HKR.components = HKR.components || {};
     /* 铺满模式：机身上下压着标题和说明，所以外面那套标题 / 说明 / 讲解都不再输出 */
     var isFill = screen.fill === true;
 
-    stopAudio();
+    /* 换屏才停录音；同一屏重画（分步点框）不停 */
+    if (lastScreenId !== screen.id) stopAudio();
+    lastScreenId = screen.id;
 
     ui.setHtml(
       host,
@@ -494,7 +518,9 @@ HKR.components = HKR.components || {};
       });
     }
 
-    /* 三个字段的屏：点当前这个框 → 记下已看 → 重画这一屏，出下一个框；第三个点完直接走 */
+    /* 三个字段的屏：点当前这个框 → 记下已看 → 播这一步的录音 → 重画出下一个框。
+       第三个框点完不再直接跳下一屏：留在本屏把那句放完，
+       底下换成「三个都看完了，接着去领取」，点一下手机再走 */
     function stepForward() {
       if (!screen.steps || !screen.steps.length) return;
       var seen = (ctx.store.getState().frontline.fields_seen || []).length;
@@ -505,10 +531,7 @@ HKR.components = HKR.components || {};
       var step = screen.steps[seen];
       ctx.store.seeFrontlineField(step.key);
       ctx.analytics.track('frontline_field_seen', { page_id: screen.id, field: step.key });
-      if (seen + 1 >= screen.steps.length) {
-        ctx.go(screen.nextPageId);
-        return;
-      }
+      playStepAudio(step, ui);
       ctx.go(screen.id);
     }
 

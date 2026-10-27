@@ -52,10 +52,10 @@ HKR.config = HKR.config || {};
       kind: 'illustration',
       title: '客人打电话',
       caption: '客人需要服务时，会打电话表达需求。',
-      script: '客人有需要，会打客房电话。这通电话，AI 会替我们接。',
+      script: '客人想要什么，就会打房间里的电话。这个电话，AI 会替咱们接。',
       image: 'assets/images/frontline-call.jpg',
       imageAlt: '客人坐在客房床边，把电话听筒贴在耳边，正准备向酒店说明需求。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-01.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-ai-workorder'
     },
@@ -65,10 +65,10 @@ HKR.config = HKR.config || {};
       kind: 'illustration',
       title: 'AI 发来工单',
       caption: 'AI 听懂客人需求后，会把工单发到你的手机上。',
-      script: 'AI 听懂客人的话，自动生成工单，直接发到你的手机上。',
+      script: 'AI 在电话里听明白客人要什么，就会自动开出一张工单，直接发到咱们手机上。咱们要干的活儿，全在这张工单上。',
       image: 'assets/images/frontline-ai-workorder.jpg',
       imageAlt: 'AI 把客人的电话需求转换成工单，酒店员工在手机上收到新工单提醒。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-02.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-notify'
     },
@@ -78,7 +78,7 @@ HKR.config = HKR.config || {};
       kind: 'screenshot',
       title: '手机上收到工单',
       caption: '点击工单，查看详情。',
-      script: '手机响一声，就是有新工单了。点开这条消息，看看客人要什么。',
+      script: '手机一响，就是新工单来了。咱们点开这条消息，看看客人要什么。',
       /* 业务方给的整屏截图：微信聊天页里那条工单通知（红框是素材自带的），
          外面套一圈机身当手机 —— 截图本身自带状态栏和底栏，不再补 */
       image: 'assets/images/frontline-notify-full.png',
@@ -95,7 +95,7 @@ HKR.config = HKR.config || {};
       showGuide: true,
       /* 这一屏的「下一步」= 点开工单，要在本机记录里留一笔 */
       markTicketOpened: true,
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-03.mp3',
       nextLabel: '点开工单',
       nextPageId: 'frontline-ticket'
     },
@@ -105,7 +105,7 @@ HKR.config = HKR.config || {};
       kind: 'screenshot',
       title: '先看三个信息',
       caption: '房间号、服务分类、服务项，一个都别漏。',
-      script: '工单上最要紧的是三样：房间号、服务分类、服务项。先看房间号，别送错房间。',
+      script: '拿到工单别急着动，先看三样最要紧的：房间号、服务分类、服务项。咱们一个一个来。',
       /* 业务方给的工单详情整屏截图（1080×2376），外面同样只补一圈机身 */
       image: 'assets/images/frontline-detail-full.jpg',
       imageAlt:
@@ -116,19 +116,41 @@ HKR.config = HKR.config || {};
          top / height 是按截图实际像素量的（分隔线 1374 / 1529 / 1684 / 1914，图高 2376）：
          房间号 1374-1529、服务分类 1529-1684、服务项 1684-1914；left/width 取分隔线两端 40-1040。 */
       steps: [
-        { key: 'room', label: '房间号', top: 57.8, height: 6.6, hint: '① 先看房间号：送到哪一间。' },
-        { key: 'category', label: '服务分类', top: 64.4, height: 6.6, hint: '② 再看服务分类：这是哪一类活儿。' },
-        { key: 'item', label: '服务项', top: 70.9, height: 9.7, hint: '③ 最后看服务项：要拿什么、拿几件。' }
+        {
+          key: 'room',
+          label: '房间号',
+          top: 57.8,
+          height: 6.6,
+          hint: '① 先看房间号：送到哪一间。',
+          audioSrc: 'assets/audio/fl-04-1.mp3'
+        },
+        {
+          key: 'category',
+          label: '服务分类',
+          top: 64.4,
+          height: 6.6,
+          hint: '② 再看服务分类：这是哪一类活儿。',
+          audioSrc: 'assets/audio/fl-04-2.mp3'
+        },
+        {
+          key: 'item',
+          label: '服务项',
+          top: 70.9,
+          height: 9.7,
+          hint: '③ 最后看服务项：要拿什么、拿几件。',
+          audioSrc: 'assets/audio/fl-04-3.mp3'
+        }
       ],
       doneHint: '三个都看完了，接着去领取。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-04.mp3',
       /* 和第 3 屏同一套：机身按原图比例铺满高度，标题压在屏内上沿；说明先去掉（要看效果） */
       fill: true,
       titleHeight: 11.7,
       /* 播放键落在原产品那个蓝色播放按钮的位置（截图 965,1833 / 1080×2376） */
       audioSpot: { left: 89.4, top: 77.1 },
-      hideHint: true,
-      /* 这一屏只有一件事：按顺序点开三个框；点完第三个直接进下一屏 */
+      /* 分步录音上线后，底部说明条恢复显示：点完一个框，文字提示和录音同步给，
+         第三个框点完留在本屏放完那句话，再点手机继续（不再直接跳屏） */
+      hideHint: false,
       hideNext: true,
       hideAudio: true,
       nextLabel: '去领取',
@@ -140,7 +162,7 @@ HKR.config = HKR.config || {};
       kind: 'screenshot',
       title: '点「领取」',
       caption: '点一下「领取」，这张工单才归你处理。',
-      script: '看完点「领取」。领了，这张工单才归你处理。',
+      script: '看完了就点下方的「领取」。点了领取，这一单就归咱们了，咱们就按工单上客人的需求，把这单做完。',
       /* 沿用第 4 屏那张详情图，只在底部的「领取」上做一个橙框 */
       image: 'assets/images/frontline-detail-full.jpg',
       imageAlt:
@@ -159,7 +181,7 @@ HKR.config = HKR.config || {};
       hideHint: true,
       hideNext: true,
       hideAudio: true,
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-05.mp3',
       nextLabel: '去布草间',
       nextPageId: 'frontline-pickup'
     },
@@ -170,10 +192,10 @@ HKR.config = HKR.config || {};
       scene: 'staff-prepare',
       title: '布草间取物',
       caption: '去布草间，把客人要的东西拿上。',
-      script: '去布草间，把客人要的拖鞋和一瓶水拿上。拿几样，工单上写着。',
+      script: '去布草间，把东西拿上：这一单是一瓶水，一双成人一次性拖鞋。要是怕记不住，随时打开工单看一眼，照着拿就行。',
       image: 'assets/images/frontline-06-pickup.jpg',
       imageAlt: '员工在布草间从货架上取下客人需要的物品。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-06.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-find-room'
     },
@@ -184,10 +206,10 @@ HKR.config = HKR.config || {};
       scene: 'staff-walk-0000',
       title: '找到 0000 房',
       caption: '按房号找门，别送错房间。',
-      script: '拿着东西去楼层，按房号找门。这一单是 0000 房，看一眼门牌再敲门。',
+      script: '东西拿好了，就去找房间。这一单是零零零零房。到门口看一眼门牌，对上了再敲门，别走错门。',
       image: 'assets/images/frontline-07-walk.jpg',
       imageAlt: '员工拿着客人要的物品，沿酒店走廊走向 0000 房。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-07.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-deliver'
     },
@@ -198,10 +220,10 @@ HKR.config = HKR.config || {};
       scene: 'staff-deliver-0000',
       title: '递给客人',
       caption: '敲门，把东西交到客人手上。',
-      script: '敲门，把东西交到客人手上。走之前问一句，还缺不缺什么。',
+      script: '到了门口敲敲门，把东西递到客人手上。不过到这里还没完哦，咱们还得再回到工单上。',
       image: 'assets/images/frontline-08-deliver.jpg',
       imageAlt: '员工在 0000 房门口，把物品递到客人手上。',
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-08.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-solve'
     },
@@ -211,7 +233,7 @@ HKR.config = HKR.config || {};
       kind: 'screenshot',
       title: '回手机点「解决」',
       caption: '服务做完，还要在手机上把工单关掉。',
-      script: '东西送到，服务还没算完。回到手机上，点「解决」，工单才会关掉。',
+      script: '东西送到了，咱们回到手机上。点底下的「解决」，点了它，这一单才算真正做完。',
       /* 业务方给的「领取后」整屏截图（556×1173），自带的播放/扳手两个悬浮按钮已从图里抹掉 */
       image: 'assets/images/frontline-solve-full.png',
       imageAlt:
@@ -226,7 +248,7 @@ HKR.config = HKR.config || {};
       titleHeight: 11.7,
       hideNext: true,
       hideAudio: true,
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-09.mp3',
       nextLabel: '继续',
       nextPageId: 'frontline-closed'
     },
@@ -236,7 +258,7 @@ HKR.config = HKR.config || {};
       kind: 'screenshot',
       title: '工单已解决',
       caption: '点完「解决」，状态就变成这样' ,
-      script: '工单变成已解决，这一单就结束了。可以接着处理下一张。',
+      script: '看，工单变成「已解决」了，这一单就结了。手机再一响，就是新的一单，照着刚才这几步做就行。',
       /* 公众号消息列表的截图（543×1120）：红框是素材自带的，圈的就是「工单状态 已解决」 */
       image: 'assets/images/frontline-closed-full.png',
       imageAlt:
@@ -248,7 +270,7 @@ HKR.config = HKR.config || {};
       /* 最后一屏：手机下面是「下一步 → 关注公众号」 */
       hideNext: false,
       hideAudio: true,
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-10.mp3',
       nextLabel: '下一步',
       nextPageId: 'frontline-account'
     },
@@ -259,7 +281,7 @@ HKR.config = HKR.config || {};
       title: '最后：关注两个公众号',
       caption: '',
       script:
-        '最后一步：这两个二维码都长按关注一下。左边这个收新工单，右边这个是报障用的。具体怎么用，上课的时候老师会带着讲一遍。',
+        '最后一步：把这两个二维码都长按关注一下。左边「华客极联云」，新工单都推到这儿，不关注就收不到。右边「华客微服务」，工单遇到问题就在这儿报障。具体怎么用，上课老师会带着大家讲一遍。',
       /* 两个二维码并排：左「华客极联云」收工单，右「华客微服务」做报障 */
       qrList: [
         {
@@ -280,7 +302,7 @@ HKR.config = HKR.config || {};
         '「华客极联云」：新工单会推到这里，不关注就收不到。',
         '「华客微服务」：工单上遇到问题，可以在这里自动报障；具体怎么用，上课时老师会带着讲一遍。'
       ],
-      audioSrc: '',
+      audioSrc: 'assets/audio/fl-11.mp3',
       /* 关注完先进测试说明页，再进测试 */
       nextLabel: '开始测试',
       nextPageId: 'frontline-quiz-intro'
