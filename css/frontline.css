@@ -1111,6 +1111,7 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   font-size: 16px;
   line-height: 1.6;
   color: var(--ink-2);
+  text-wrap: balance; /* 两行时让两行长度接近，避免最后一行只剩一两个字 */
 }
 
 .fl-quiz__done-note {

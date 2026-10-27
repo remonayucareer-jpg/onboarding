@@ -110,19 +110,11 @@ HKR.pages = HKR.pages || {};
   }
 
   function passedMarkup(st, quiz) {
-    var answered = st.log.length;
-    var accuracy = answered ? Math.round((st.correct / answered) * 100) : 100;
     return (
       '<section class="fl-quiz fl-quiz--done" data-quiz-view="passed">' +
       '<span class="fl-quiz__badge" aria-hidden="true">✓</span>' +
-      '<h1 class="fl-quiz__done-title">测试完成</h1>' +
-      '<p class="fl-quiz__done-desc">你答对了 ' +
-      st.correct +
-      ' 题（一共答了 ' +
-      answered +
-      ' 次，正确率 ' +
-      accuracy +
-      '%）。照着工单去服务客人吧。</p>' +
+      '<h1 class="fl-quiz__done-title">您已通过测试！</h1>' +
+      '<p class="fl-quiz__done-desc">很棒，希望华客 AI 能在你的工作中更好地配合你。</p>' +
       '<p class="fl-quiz__done-note">这一课到这里就结束了，可以关掉页面。</p>' +
       '</section>'
     );

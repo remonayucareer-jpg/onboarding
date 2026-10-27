@@ -403,28 +403,30 @@ HKR.components = HKR.components || {};
       if (phoneSlot) HKR.components.frontlinePhone.render(phoneSlot, ctx, screen);
     }
 
-    /* 内联插画：先用 SVG 顶上；业务方给了正式插画（image 存在）就换成那张图 */
+    /* 插画：有正式插画的屏直接上图。
+     * 以前的写法是「先画内联 SVG（旧版画着猫的那套插画），等图片 onload 再换掉」，
+     * 结果就是第 6/7/8 屏会先闪一下旧插画。现在改成直接上图，只有图加载失败时才退回 SVG。 */
     if (screen.kind === 'scene') {
       var sceneSlot = ui.$('[data-role="fl-scene"]', host);
       if (sceneSlot) {
-        HKR.components.illustration.render(sceneSlot, { scene: screen.scene, alt: screen.imageAlt });
         if (screen.image) {
-          var probe = new Image();
-          probe.onload = function () {
-            if (!sceneSlot.parentNode) return;
-            ui.setHtml(
-              sceneSlot,
-              '<img class="frontline-scene__image" src="' +
-                ui.escapeHtml(screen.image) +
-                '" alt="' +
-                ui.escapeHtml(screen.imageAlt) +
-                '" width="1440" height="1080" decoding="async" />'
-            );
-          };
-          probe.onerror = function () {
-            /* 没有正式插画：继续用内联 SVG，不报错 */
-          };
-          probe.src = screen.image;
+          ui.setHtml(
+            sceneSlot,
+            '<img class="frontline-scene__image" src="' +
+              ui.escapeHtml(screen.image) +
+              '" alt="' +
+              ui.escapeHtml(screen.imageAlt) +
+              '" width="1440" height="1080" decoding="async" />'
+          );
+          var artImg = sceneSlot.querySelector('img');
+          if (artImg) {
+            artImg.addEventListener('error', function () {
+              /* 图没了才退回内联 SVG，不报错、不留白 */
+              HKR.components.illustration.render(sceneSlot, { scene: screen.scene, alt: screen.imageAlt });
+            });
+          }
+        } else {
+          HKR.components.illustration.render(sceneSlot, { scene: screen.scene, alt: screen.imageAlt });
         }
       }
     }
