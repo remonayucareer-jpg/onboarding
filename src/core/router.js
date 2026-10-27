@@ -142,6 +142,14 @@ HKR.core = HKR.core || {};
     }
   };
 
+  /* 换页时把上一屏的讲解停掉。
+   * 讲解由 components/frontline-scene.js 持有，它只在自己那几屏之间换屏时才会停，
+   * 所以跨到别的页面模块（测试说明页、测题页、角色页…）要靠这里补一刀。 */
+  function stopSceneAudio() {
+    var scene = HKR.components && HKR.components.frontlineScene;
+    if (scene && typeof scene.stopAudio === 'function') scene.stopAudio();
+  }
+
   function render(pageId, options) {
     var opts = options || {};
     if (!opts.force && Date.now() < lockUntil) {
@@ -155,6 +163,8 @@ HKR.core = HKR.core || {};
     if (currentId && currentId !== pageId) {
       var dwell = store.leavePage(currentId);
       analytics.track('page_leave', { page_id: currentId, dwell_seconds: Math.round(dwell) });
+      /* 换页就停掉上一页还在播的讲解（跨页面模块也生效，比如第 11 屏 → 测试说明页） */
+      stopSceneAudio();
     } else if (!currentId && store.getState().session.visited_pages.length === 0) {
       analytics.track('session_start', { campaign_id: store.getState().session.campaign_id });
     }

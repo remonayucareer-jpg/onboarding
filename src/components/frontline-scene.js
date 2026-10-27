@@ -20,6 +20,10 @@ HKR.components = HKR.components || {};
      同一屏内重画（分步点框）不掐断 —— 不然点完框刚起的录音马上被重画停掉 */
   var audioEl = null;
   var lastScreenId = null;
+  /* 自动播放：进一屏 0.5 秒后自己播这一屏的讲解；同一屏只自动播一次，
+     她想再听就点按钮（点了就是正常播放，不受这里影响） */
+  var autoPlayTimer = null;
+  var autoPlayedScreenId = null;
 
   function stopAudio() {
     if (!audioEl) return;
@@ -32,7 +36,8 @@ HKR.components = HKR.components || {};
     audioEl = null;
   }
 
-  function playAudio(screen, button, ui) {
+  function playAudio(screen, button, ui, options) {
+    var auto = !!(options && options.auto);
     stopAudio();
     var el = new Audio();
     var label = ui.$('.frontline-audio__label', button);
@@ -43,7 +48,10 @@ HKR.components = HKR.components || {};
     }
 
     el.preload = 'auto';
-    el.addEventListener('ended', reset);
+    el.addEventListener('ended', function () {
+      markHeard(el.src);
+      reset();
+    });
     el.addEventListener('error', function () {
       reset();
       ui.toast('这一屏的录音没加载出来，先看画面。', { variant: 'note', duration: 2400 });
@@ -55,9 +63,16 @@ HKR.components = HKR.components || {};
     if (played && typeof played.catch === 'function') {
       played.catch(function () {
         reset();
+        if (auto) {
+          /* 自动播放被手机拦了（iPhone 微信基本都会拦）：不弹错，改成让按钮"跳一下"提示她点 */
+          button.classList.add('is-nudge');
+          if (label) label.textContent = '点一下听讲解';
+          return;
+        }
         ui.toast('录音没能播放，可以点一下再试。', { variant: 'note', duration: 2400 });
       });
     }
+    button.classList.remove('is-nudge');
     button.setAttribute('data-audio-state', 'playing');
     if (label) label.textContent = '正在播放…';
   }
@@ -69,6 +84,9 @@ HKR.components = HKR.components || {};
     stopAudio();
     var el = new Audio();
     el.preload = 'auto';
+    el.addEventListener('ended', function () {
+      markHeard(el.src);
+    });
     el.addEventListener('error', function () {
       ui.toast('这一步的录音没加载出来，先看画面。', { variant: 'note', duration: 2400 });
     });
@@ -80,6 +98,33 @@ HKR.components = HKR.components || {};
         /* 微信偶尔拦手势后的连播：不打断她，界面文字仍然在给指引 */
       });
     }
+  }
+
+  /* ---------- 「先听完再点」：分步屏（第 4 屏）的闸门 ----------
+   * 一段讲解第一次还没播完时，点哪儿都不往下一步走，只提醒她先听；
+   * 播完一遍之后再点就随便点（包括重新播放时点别处也能继续）。
+   * 录音要是根本没播起来（手机拦了自动播放），闸门不生效，避免她点不动。 */
+  var heardSrcs = {};
+  var lastGateToastAt = 0;
+
+  function markHeard(src) {
+    if (src) heardSrcs[src] = true;
+  }
+
+  function firstPlayStillRunning() {
+    if (!audioEl) return false;
+    if (heardSrcs[audioEl.src]) return false; // 已经完整听过一遍
+    return audioEl.paused === false && audioEl.ended !== true;
+  }
+
+  function blockedByFirstPlay(ui) {
+    if (!firstPlayStillRunning()) return false;
+    var now = Date.now();
+    if (now - lastGateToastAt > 1600) {
+      lastGateToastAt = now;
+      ui.toast('先听完这一段，再往下点。', { variant: 'note', duration: 1600 });
+    }
+    return true;
   }
 
   /* 三个字段的热区：一次只出一个框（点完一个才出下一个）。
@@ -365,7 +410,11 @@ HKR.components = HKR.components || {};
     var isFill = screen.fill === true;
 
     /* 换屏才停录音；同一屏重画（分步点框）不停 */
-    if (lastScreenId !== screen.id) stopAudio();
+    var enteringScreen = lastScreenId !== screen.id;
+    if (enteringScreen) {
+      stopAudio();
+      autoPlayedScreenId = null;
+    }
     lastScreenId = screen.id;
 
     ui.setHtml(
@@ -523,6 +572,8 @@ HKR.components = HKR.components || {};
        底下换成「三个都看完了，接着去领取」，点一下手机再走 */
     function stepForward() {
       if (!screen.steps || !screen.steps.length) return;
+      /* 这一段讲解第一次还没听完，就先不让她点走 */
+      if (blockedByFirstPlay(ui)) return;
       var seen = (ctx.store.getState().frontline.fields_seen || []).length;
       if (seen >= screen.steps.length) {
         ctx.go(screen.nextPageId);
@@ -567,9 +618,44 @@ HKR.components = HKR.components || {};
       ctx.analytics.track('frontline_exit', { page_id: screen.id });
       ctx.go('roles');
     });
+
+    /* 进这一屏 0.5 秒后自动播讲解（同一屏只自动播一次） */
+    scheduleAutoPlay(screen, host, ui, ctx);
+  }
+
+  /* 自动播放：进屏停 0.5 秒，等画面先出来，再自己播这一屏的讲解。
+   * 手机（尤其 iPhone 微信）常常拦自动播放，拦了就把播放键「跳一下」提示她点，不弹错。
+   * 想关掉：app.config.js 里 features.autoPlayAudio = false。 */
+  function scheduleAutoPlay(screen, host, ui, ctx) {
+    var features = (HKR.config.app && HKR.config.app.features) || {};
+    if (features.autoPlayAudio === false) return;
+    if (!screen || !screen.audioSrc) return;
+    if (autoPlayedScreenId === screen.id) return;
+
+    /* 第 4 屏这种分步屏：已经在看第二、第三个框了，就别用整屏录音盖掉分步录音 */
+    if (screen.steps && screen.steps.length) {
+      var seen = (ctx.store.getState().frontline.fields_seen || []).length;
+      if (seen > 0) return;
+    }
+
+    var button = ui.$('[data-action="frontline-audio"]', host);
+    if (!button) return;
+
+    autoPlayedScreenId = screen.id;
+    window.clearTimeout(autoPlayTimer);
+    autoPlayTimer = window.setTimeout(function () {
+      var stillThere = button.isConnected !== undefined ? button.isConnected : document.body.contains(button);
+      if (!stillThere) return;
+      /* 她这 0.5 秒里自己点了播放，就别重复播 */
+      if (button.getAttribute('data-audio-state') === 'playing') return;
+      playAudio(screen, button, ui, { auto: true });
+    }, 500);
   }
 
   HKR.components.frontlineScene = {
-    render: render
+    render: render,
+    /* 换页时由路由调用：离开这一屏就停掉还在播的讲解
+     * （同一屏重画不会走这里，所以分步录音不会被掐断） */
+    stopAudio: stopAudio
   };
 })();

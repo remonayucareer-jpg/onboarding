@@ -64,6 +64,7 @@ HKR.config.app = {
 
   features: {
     showLocalRecordsPanel: true, // 完成页的「查看本次本地记录（演示用）」入口
+    autoPlayAudio: true, // 进一屏 0.5 秒后自动播这一屏的讲解（手机拦自动播放时会提示点按钮）
     resetRecordsOnOpen: false // false = 关掉页面再打开能接着上次继续（记录留在本机 localStorage）
   }
 };

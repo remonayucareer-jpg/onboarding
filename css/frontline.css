@@ -817,6 +817,32 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   text-align: center;
 }
 
+/* 自动播放被手机拦下时，让播放键「跳一圈」提示她点（用 box-shadow 而不是 transform，
+ * 因为浮在截图上的那个按钮靠 transform 定位，改 transform 会把它挪走） */
+.fl-device__audio.is-nudge,
+.frontline-audio.is-nudge {
+  animation: fl-nudge 1.3s ease-out infinite;
+}
+
+@keyframes fl-nudge {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 26, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(255, 107, 26, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 26, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-device__audio.is-nudge,
+  .frontline-audio.is-nudge {
+    animation: none;
+  }
+}
+
 /* ==================== 课后测试 · 说明页 ====================
  * 出题之前先把规则讲清楚：几道题、怎么答、答对几道算过。
  */
