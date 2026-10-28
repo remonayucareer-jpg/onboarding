@@ -933,6 +933,11 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   color: var(--ink-3);
 }
 
+/* 说明页的讲解入口：和别的页一样一条横条 */
+.fl-intro__voice {
+  margin-top: 2px;
+}
+
 .fl-intro__action {
   display: grid;
   gap: 10px;

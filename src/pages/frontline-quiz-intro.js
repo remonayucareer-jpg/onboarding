@@ -38,6 +38,10 @@ HKR.pages = HKR.pages || {};
 
             <p class="fl-intro__note">${cfg.note}</p>
 
+            <div class="fl-intro__voice">
+              ${ui.raw(HKR.components.frontlineAudio.render({ label: cfg.audioLabel || '播放讲解' }))}
+            </div>
+
             <div class="fl-intro__action">
               <button class="btn btn--navy btn--lg fl-intro__button" type="button" data-action="quiz-start">
                 <span>${cfg.cta}</span>
@@ -48,6 +52,24 @@ HKR.pages = HKR.pages || {};
           </section>
         `
       );
+
+      /* 讲解录音：这一屏的录音还没录，就先提示；录好把 audioSrc 填上就能用。
+       * 播放器复用学习画面的那一个，所以离开这一页会自动停。 */
+      var audioButton = ui.$('[data-action="frontline-audio"]', host);
+
+      ui.delegate(host, '[data-action="frontline-audio"]', 'click', function (event, target) {
+        if (!cfg.audioSrc) {
+          ui.toast('这一屏的讲解录音还在制作，先看文字。', { variant: 'note', duration: 2400 });
+          return;
+        }
+        ctx.analytics.track('quiz_intro_audio', {});
+        HKR.components.frontlineScene.play({ audioSrc: cfg.audioSrc }, target, ui, {});
+      });
+
+      /* 进来就自动播（这一页是点「开始测试」进来的，正好在手势里） */
+      if (cfg.audioSrc && audioButton) {
+        HKR.components.frontlineScene.play({ audioSrc: cfg.audioSrc }, audioButton, ui, { auto: true });
+      }
 
       ui.delegate(host, '[data-action="quiz-start"]', 'click', function () {
         ctx.store.resetQuiz();

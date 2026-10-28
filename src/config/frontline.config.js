@@ -250,33 +250,11 @@ HKR.config = HKR.config || {};
       hideAudio: true,
       audioSrc: 'assets/audio/fl-09.mp3',
       nextLabel: '继续',
-      nextPageId: 'frontline-closed'
-    },
-    {
-      id: 'frontline-closed',
-      step: 10,
-      kind: 'screenshot',
-      title: '工单已解决',
-      caption: '点完「解决」，状态就变成这样' ,
-      script: '看，工单变成「已解决」了，这一单就结了。手机再一响，就是新的一单，照着刚才这几步做就行。',
-      /* 公众号消息列表的截图（543×1120）：红框是素材自带的，圈的就是「工单状态 已解决」 */
-      image: 'assets/images/frontline-closed-full.png',
-      imageAlt:
-        '公众号「华客极联云」的消息列表：最新一条工单处理通知的状态写着「张璐璐 已解决」，外面用红框圈住。',
-      imageWidth: 543,
-      imageHeight: 1120,
-      fill: true,
-      titleHeight: 12.4,
-      /* 最后一屏：手机下面是「下一步 → 关注公众号」 */
-      hideNext: false,
-      hideAudio: true,
-      audioSrc: 'assets/audio/fl-10.mp3',
-      nextLabel: '下一步',
       nextPageId: 'frontline-account'
     },
     {
       id: 'frontline-account',
-      step: 11,
+      step: 10,
       kind: 'qr',
       title: '最后：关注两个公众号',
       caption: '',
@@ -319,6 +297,10 @@ HKR.config = HKR.config || {};
       '每道题选一个答案，选完马上告诉你对不对'
     ],
     note: '答错了也没关系，可以再看一遍、再来一次。',
+    /* 这一页的讲解录音：录好放到 assets/audio/ 下，把文件名填进来就自动生效
+     * （留空时点播放键只会提示"录音还在制作"） */
+    audioSrc: 'assets/audio/fl-intro.mp3',
+    audioLabel: '听讲解',
     cta: '开始答题',
     nextPageId: 'frontline-quiz'
   };

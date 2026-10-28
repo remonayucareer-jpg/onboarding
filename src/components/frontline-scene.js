@@ -24,6 +24,17 @@ HKR.components = HKR.components || {};
      她想再听就点按钮（点了就是正常播放，不受这里影响） */
   var autoPlayTimer = null;
   var autoPlayedScreenId = null;
+  /* 最近一次“她真的点了屏幕”的时间：用来判断这次换屏能不能立刻播 */
+  var lastGestureAt = 0;
+  var autoBlockedHinted = false;
+  if (document && document.addEventListener) {
+    var markGesture = function () {
+      lastGestureAt = Date.now();
+    };
+    ['pointerdown', 'touchstart', 'mousedown', 'click', 'keydown'].forEach(function (type) {
+      document.addEventListener(type, markGesture, true);
+    });
+  }
 
   function stopAudio() {
     if (!audioEl) return;
@@ -61,12 +72,22 @@ HKR.components = HKR.components || {};
 
     var played = el.play();
     if (played && typeof played.catch === 'function') {
-      played.catch(function () {
+      played.catch(function (error) {
         reset();
         if (auto) {
-          /* 自动播放被手机拦了（iPhone 微信基本都会拦）：不弹错，改成让按钮"跳一下"提示她点 */
+          /* 自动播放被手机拦了（iPhone 微信基本都会拦）：不弹错，让按钮"跳一下"提示她点，
+             整场只轻声提示一次，免得每屏都弹 */
           button.classList.add('is-nudge');
           if (label) label.textContent = '点一下听讲解';
+          if (!autoBlockedHinted) {
+            autoBlockedHinted = true;
+            ui.toast('点一下喇叭，就能听讲解。', { variant: 'note', duration: 2600 });
+          }
+          if (window.console && window.console.info) {
+            window.console.info(
+              '[audio] 自动播放被浏览器拦下（' + ((error && error.name) || 'blocked') + '），点播放键即可。'
+            );
+          }
           return;
         }
         ui.toast('录音没能播放，可以点一下再试。', { variant: 'note', duration: 2400 });
@@ -643,19 +664,35 @@ HKR.components = HKR.components || {};
 
     autoPlayedScreenId = screen.id;
     window.clearTimeout(autoPlayTimer);
-    autoPlayTimer = window.setTimeout(function () {
+
+    function tryPlayNow() {
       var stillThere = button.isConnected !== undefined ? button.isConnected : document.body.contains(button);
       if (!stillThere) return;
-      /* 她这 0.5 秒里自己点了播放，就别重复播 */
+      /* 这中间她自己点了播放，就别重复播 */
       if (button.getAttribute('data-audio-state') === 'playing') return;
       playAudio(screen, button, ui, { auto: true });
-    }, 500);
+    }
+
+    /* iPhone 微信 / Safari 只认「点下去那一刻」，隔 0.5 秒再播必被拦。
+     * 所以：如果这次换屏本来就是她点出来的（1.2 秒内有手势），就在同一个任务里立刻播；
+     * 没有手势（比如打开链接直接续到这一屏）才等 0.5 秒——这类本来就播不了，靠按钮提示。 */
+    if (Date.now() - lastGestureAt < 1200) {
+      tryPlayNow();
+      return;
+    }
+    autoPlayTimer = window.setTimeout(tryPlayNow, 500);
   }
 
   HKR.components.frontlineScene = {
     render: render,
     /* 换页时由路由调用：离开这一屏就停掉还在播的讲解
      * （同一屏重画不会走这里，所以分步录音不会被掐断） */
-    stopAudio: stopAudio
+    stopAudio: stopAudio,
+    /* 给不在本组件里的页面复用同一个播放器（比如测试说明页）：
+     * 共用一个 audioEl，换页时路由那次 stopAudio 一样能把它停掉 */
+    play: function (screenLike, button, ui, options) {
+      if (!screenLike || !screenLike.audioSrc) return;
+      playAudio(screenLike, button, ui, options || {});
+    }
   };
 })();
