@@ -82,7 +82,9 @@ HKR.core = HKR.core || {};
     var currentTrackOrder = trackOrder(track);
     var index = currentTrackOrder.indexOf(currentId);
     var weight = HKR.config.progressWeights[currentId] || 0;
-    var canBack = currentId !== 'roles';
+    var canBack = currentId !== 'roles' && currentId !== 'frontline-comic' && currentId !== 'frontline-cover';
+    /* 开场漫画是落地首屏：不显示返回、也不显示步数，当片头看 */
+    var isCinematic = currentId === 'frontline-comic' || currentId === 'frontline-cover';
 
     ui.setHtml(
       progressEl,
@@ -96,7 +98,7 @@ HKR.core = HKR.core || {};
             <span class="topbar__chapter">${meta ? meta.chapter : ''}</span>
             <span class="topbar__step">${meta ? meta.stepLabel : ''}</span>
           </div>
-          <span class="topbar__count">${index + 1}/${currentTrackOrder.length}</span>
+          <span class="topbar__count">${isCinematic ? '' : index + 1 + '/' + currentTrackOrder.length}</span>
         </div>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(weight * 100)}" aria-label="体验进度">
           <span class="progress__fill" style="width:${Math.round(weight * 100)}%"></span>
@@ -136,8 +138,8 @@ HKR.core = HKR.core || {};
       analytics.clearLocalRecords();
       currentId = null;
       resumeHintMeta = null;
-      window.location.hash = '/roles';
-      render('roles');
+      window.location.hash = '/frontline-cover';
+      render('frontline-cover');
       ui.toast('已重新开始，本次记录已清除（本地演示用）');
     }
   };
@@ -242,21 +244,12 @@ HKR.core = HKR.core || {};
     var resumedFrom = null;
     if (!initial) {
       /* 打开链接（没有 #/页面）：
-       * - 一线员工：如果本机还留着上次的进度，直接回到上次停的那一页（她是用链接反复进来的）；
-       * - 其他角色（管理员）：仍然固定从角色入口开始，续学只在欢迎页显式出现。 */
-      var snapshot = store.getState();
-      var lastPage = snapshot.session.last_page_id;
-      var canResumeFrontline =
-        lastPage && lastPage !== 'roles' && indexOf(lastPage) >= 0 && trackOf(lastPage) === 'frontline';
-
-      if (canResumeFrontline) {
-        initial = lastPage;
-        resumedFrom = lastPage;
-      } else {
-        var resumable = resumeTarget();
-        if (resumable) analytics.track('session_resume_available', { page_id: resumable.id });
-        initial = 'roles';
-      }
+       * 一律先给「首页」（一线员工预习材料封面）——它是这份材料的封面，
+       * 每次打开都该先看到它。上次学到哪一屏留到点「开始预习」时再接着走
+       * （见 pages/frontline-cover.js）。 */
+      var resumable = resumeTarget();
+      if (resumable) analytics.track('session_resume_available', { page_id: resumable.id });
+      initial = 'frontline-cover';
       window.location.replace('#' + '/' + initial);
     } else {
       analytics.track('session_resume', { page_id: initial });
@@ -292,3 +285,4 @@ HKR.core = HKR.core || {};
     }
   };
 })();
+

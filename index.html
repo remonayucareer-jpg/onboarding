@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="css/game.css" />
     <link rel="stylesheet" href="css/roles.css" />
     <link rel="stylesheet" href="css/frontline.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <link rel="stylesheet" href="css/comic.css" />
+    <link rel="stylesheet" href="css/cover.css" />
   </head>
   <body>
     <div class="app">
@@ -42,6 +45,7 @@
     <script src="src/config/app.config.js"></script>
     <!-- 一线员工的 11 屏：pages.config 的页面顺序与进度都由它生成，必须排在它前面 -->
     <script src="src/config/frontline.config.js"></script>
+    <script src="src/config/admin.config.js"></script>
     <script src="src/config/pages.config.js"></script>
     <script src="src/config/questions.config.js"></script>
     <script src="src/config/scenes.config.js"></script>
@@ -69,6 +73,7 @@
 
     <!-- 页面层（角色入口 → 管理员完整预习 / 一线员工预习） -->
     <script src="src/pages/roles.js"></script>
+    <script src="src/pages/admin-panorama.js"></script>
     <script src="src/pages/welcome.js"></script>
     <script src="src/pages/pain-point.js"></script>
     <script src="src/pages/need-types.js"></script>
@@ -80,6 +85,8 @@
     <script src="src/pages/frontline.js"></script>
     <!-- 11 个学习画面：一次注册 11 个页面 id（内容全部在 config/frontline.config.js） -->
     <script src="src/pages/frontline-screens.js"></script>
+    <script src="src/pages/frontline-cover.js"></script>
+    <script src="src/pages/frontline-comic.js"></script>
     <script src="src/pages/frontline-identity.js"></script>
     <script src="src/pages/frontline-quiz-intro.js"></script>
     <script src="src/pages/frontline-quiz.js"></script>
@@ -87,6 +94,9 @@
     <script src="src/app.js"></script>
   </body>
 </html>
+
+
+
 
 
 

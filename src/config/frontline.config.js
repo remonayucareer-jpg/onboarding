@@ -1,4 +1,4 @@
-/* 一线员工课件（11 屏）的内容配置
+﻿/* 一线员工课件（11 屏）的内容配置
  * ---------------------------------------------------------------
  * 改文案 / 换插画 / 接录音，只改这一个文件，不用碰页面代码。
  *
@@ -376,10 +376,88 @@ HKR.config = HKR.config || {};
     });
   });
 
+  /* ============ 开场封面（真正的落地首屏） ============
+   * 一句“这是一份正式材料” + 三个数字 + 三条说明，然后进开场漫画。
+   */
+  var cover = {
+    /* 开屏页直接用设计稿那张图（780×1688 = 390×844 @2x），换图只改这一行 */
+    poster: 'assets/images/start-page/start-cover.png',
+    posterAlt: '一线员工预习材料：10 个学习画面，6 分钟看完，答对 2 题就能通过。',
+    nextPageId: 'frontline-comic'  };
+  /* ============ 开场漫画（落地首屏） ============
+   * 一页四格，4.5 秒自动播完，然后停住等她点。
+   * 图在 assets/images/comic/，拟声词不烤进图里，位置用百分比对准画面。
+   */
+  var comic = {
+    nextPageId: 'frontline-identity',
+    /* 顶部那行：和正文的「第 N 步 / 共 10 步」用同一套排版，只是内容换成这一屏自己的 */
+    stepLabel: '场景',
+    countLabel: '约 5 秒',
+    subtitle: '没有 AI 的时候',
+    /* 播完之后才出现的结尾：一句共情 + 一个动作按钮 */
+    endline: '这样的班，谁上谁知道。',
+    nextLabel: '看 AI 怎么搭把手',
+    /* start：第一格入场时间；step：每格间隔（4 格 = 0.5 + 0.85×4 + 0.15 ≈ 4.0s 播完） */
+    timeline: { start: 500, step: 850 },
+    panels: [
+      {
+        shape: 'wide',
+        src: 'assets/images/comic/fl-comic-1.webp',
+        alt: '走廊里，她一手举着话筒、一手抱着工单，肩上还夹着一部手机。',
+        onoma: '叮铃铃铃！！',
+        x: 4,
+        y: 8,
+        rot: -8,
+        size: 'lg'
+      },
+      {
+        shape: 'small',
+        src: 'assets/images/comic/fl-comic-2.webp',
+        alt: '她抱着水和拖鞋在走廊里小跑。',
+        onoma: '咚咚咚…',
+        x: 52,
+        y: 62,
+        rot: 6,
+        size: 'md'
+      },
+      {
+        shape: 'small',
+        src: 'assets/images/comic/fl-comic-3.webp',
+        alt: '客房门打开，客人一脸困惑，她站在门外有些不好意思。',
+        /* 空泡泡里放她的一声「啊？」：泡泡中心约 (53%, 16%) */
+        onoma: '啊？',
+        x: 53,
+        y: 16,
+        rot: -3,
+        size: 'sm',
+        /* 客人那句「我不要这个…」挪到画面左上角，当旁白式的一句 */
+        extra: { text: '我不要这个…', x: 4, y: 74, rot: -3 }
+      },
+      {
+        shape: 'banner',
+        src: 'assets/images/comic/fl-comic-4.webp',
+        alt: '她扶着额头，眼睛打转，怀里东西快掉了。',
+        onoma: '晕……',
+        x: 78,
+        y: 58,
+        rot: 5,
+        size: 'lg'
+      }
+    ],
+    /* 音效按“第几格出现”触发；文件还没放进来就静默跳过 */
+    sfx: [
+      { panel: 1, src: 'assets/audio/sfx-ring.wav' },
+      { panel: 3, src: 'assets/audio/sfx-pop.wav' },
+      { panel: 4, src: 'assets/audio/sfx-dizzy.wav' }
+    ]
+  };
+
   HKR.config.frontline = {
     /* 屏数由 screens 自己算：加一屏 / 删一屏不用再改数字 */
     totalSteps: screens.length,
     ticket: ticket,
+    cover: cover,
+    comic: comic,
     screens: screens,
     quizIntro: quizIntro,
     quiz: {
@@ -388,6 +466,16 @@ HKR.config = HKR.config || {};
     }
   };
 })();
+
+
+
+
+
+
+
+
+
+
 
 
 

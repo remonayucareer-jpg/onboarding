@@ -1,4 +1,4 @@
-/* 页面顺序与章节信息（路由进度、步骤提示都从这里取）
+﻿/* 页面顺序与章节信息（路由进度、步骤提示都从这里取）
  * 一线员工的 11 屏不在本文件里重复写一遍：页面顺序、步骤名、进度权重全部由
  * src/config/frontline.config.js#screens 生成，改屏只改那一个文件。
  */
@@ -14,6 +14,7 @@ HKR.config = HKR.config || {};
 
     /* 现有完整预习内容先全部收进管理员路线，后续再按四个管理模块重排。 */
     { id: 'welcome',          chapter: '管理员版', stepLabel: '欢迎',      title: '管理员预习', track: 'admin' },
+    { id: 'admin-panorama',   chapter: '第一章',   stepLabel: 'AI 能做什么', title: 'AI 能做 / 不能做', track: 'admin' },
     { id: 'pain-point',       chapter: '第一章',   stepLabel: '产品价值',  title: '认识产品价值', track: 'admin' },
     { id: 'need-types',       chapter: '第一章',   stepLabel: '两类需求',  title: '认识两类需求', track: 'admin' },
     { id: 'scene-delivery',   chapter: '第二章',   stepLabel: '接单小游戏', title: '进入工作现场', track: 'admin' },
@@ -23,7 +24,9 @@ HKR.config = HKR.config || {};
     { id: 'official-account', chapter: '第三章',   stepLabel: '公众号准备', title: '打通工单消息通道', track: 'admin' },
     { id: 'finish',           chapter: '完成',     stepLabel: '完成',      title: '完成页', track: 'admin' },
 
-    /* 一线员工：先登记酒店 + 姓名，再看准备页；两页都不计入后面的学习画面。 */
+    /* 一线员工：开场漫画（落地首屏）→ 登记酒店 + 姓名 → 准备页；三者都不计入学习画面。 */
+    { id: 'frontline-cover',  chapter: '一线员工版', stepLabel: '首页',    title: '一线员工预习材料', track: 'frontline' },
+    { id: 'frontline-comic',  chapter: '一线员工版', stepLabel: '开场',    title: '开场漫画', track: 'frontline' },
     { id: 'frontline-identity', chapter: '一线员工版', stepLabel: '登记信息', title: '登记信息', track: 'frontline' },
     { id: 'frontline',        chapter: '一线员工版', stepLabel: '准备开始', title: '一线员工预习', track: 'frontline' }
   ];
@@ -60,6 +63,7 @@ HKR.config = HKR.config || {};
     roles: 0,
     'frontline-identity': 0,
     welcome: 0.05,
+    'admin-panorama': 0.12,
     'pain-point': 0.15,
     'need-types': 0.25,
     'scene-delivery': 0.45,
@@ -159,3 +163,6 @@ HKR.config = HKR.config || {};
     tipNote: '数据只存在你自己的手机上，不会公开给其他同事。'
   };
 })();
+
+
+
