@@ -1,4 +1,4 @@
-﻿/* 一线员工课件（11 屏）的内容配置
+/* 一线员工课件（11 屏）的内容配置
  * ---------------------------------------------------------------
  * 改文案 / 换插画 / 接录音，只改这一个文件，不用碰页面代码。
  *
@@ -394,8 +394,14 @@ HKR.config = HKR.config || {};
     stepLabel: '场景',
     countLabel: '约 5 秒',
     subtitle: '没有 AI 的时候',
-    /* 播完之后才出现的结尾：一句共情 + 一个动作按钮 */
-    endline: '这样的班，谁上谁知道。',
+    /* 旁白录音位：四个音效全部放完之后，再播这一段人声。
+     * 现在先空着（不播任何东西）。录音录好后：
+     *   1) 文件放到 assets/audio/fl-comic-narration.mp3
+     *   2) 把下面这行填上文件名：'assets/audio/fl-comic-narration.mp3'
+     * 页面上不显示任何文字，只有声音。 */
+    narrationSrc: 'assets/audio/fl-comic-narration.mp3',
+    /* 播完之后只出现一个动作按钮；那句共情文案暂时不放（留空即不显示） */
+    endline: '',
     nextLabel: '看 AI 怎么搭把手',
     /* start：第一格入场时间；step：每格间隔（4 格 = 0.5 + 0.85×4 + 0.15 ≈ 4.0s 播完） */
     timeline: { start: 500, step: 850 },
@@ -466,6 +472,8 @@ HKR.config = HKR.config || {};
     }
   };
 })();
+
+
 
 
 

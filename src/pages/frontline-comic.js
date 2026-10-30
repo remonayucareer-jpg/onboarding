@@ -75,8 +75,11 @@ HKR.pages = HKR.pages || {};
             <ol class="fl-comic__page">
               ${ui.raw(panelsHtml)}
             </ol>
+
             <div class="fl-comic__end">
-              <p class="fl-comic__endline">${esc(cfg.endline || '')}</p>
+              ${cfg.endline
+                ? ui.raw('<p class="fl-comic__endline">' + esc(cfg.endline) + '</p>')
+                : ''}
               <button class="btn btn--navy btn--lg fl-comic__cta" type="button" data-action="comic-next">
                 <span>${esc(cfg.nextLabel || '继续')}</span>
                 <span class="btn__arrow" aria-hidden="true">${ui.raw(ARROW)}</span>
@@ -125,6 +128,9 @@ HKR.pages = HKR.pages || {};
         if (done || !alive()) return;
         done = true;
         root.setAttribute('data-done', 'true');
+        /* 旁白录音位：这时候四个音效都放完了，接着播人声。
+         * cfg.narrationSrc 还空着就什么都不做（页面照常往下走）。 */
+        if (cfg.narrationSrc) playSfx(cfg.narrationSrc);
         ctx.analytics.track('frontline_comic_done', { panels: panels.length });
       }
 
