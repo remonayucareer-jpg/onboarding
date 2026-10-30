@@ -1,0 +1,350 @@
+﻿/* 管理版（管理员预习）样式
+ * 和一线版区分：字号小一档、信息密度更高、留白更克制。
+ * 第 1 屏「AI 能做 / 不能做」按设计稿 1:1 还原（衬线大标题 + 右侧灯绳 + 编号列表）。
+ */
+
+/* ==================== 第 1 屏：AI 能做 / 不能做 ==================== */
+
+.ad-panorama {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 186px);
+  min-height: calc(100dvh - 186px);
+  padding: 6px 0 0;
+  color: var(--ink);
+  transition: color 420ms ease;
+}
+
+/* ---------- 标题区 ---------- */
+.ad-panorama__head {
+  position: relative;
+  z-index: 1;
+}
+
+.ad-panorama__kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  transition: color 420ms ease;
+}
+
+.ad-panorama__rule {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--navy-deep);
+}
+
+.ad-panorama[data-lit='false'] .ad-panorama__rule {
+  background: #b9c0c8;
+}
+
+/* 衬线大标题：设计稿用的是宋体，这里按平台给一组衬线字体栈 */
+.ad-panorama__title {
+  margin: 10px 0 0;
+  font-family: 'Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-size: 36px;
+  line-height: 1.18;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--navy-deep);
+  transition: color 420ms ease;
+}
+
+.ad-panorama__title-dim {
+  color: #c7cdd4;
+  transition: color 420ms ease;
+}
+
+.ad-panorama[data-lit='false'] .ad-panorama__title {
+  color: #9aa1a9;
+}
+
+.ad-panorama[data-lit='false'] .ad-panorama__title-dim {
+  color: #d4d8dd;
+}
+
+/* ---------- 灯绳 ---------- */
+.ad-cord {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  z-index: 2;
+  width: 112px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.ad-cord__rail {
+  width: 26px;
+  height: 3px;
+  border-radius: 2px;
+  background: #c9ced6;
+}
+
+.ad-cord__rope {
+  width: 2px;
+  height: 96px;
+  background: linear-gradient(180deg, #c2c8d0 0%, #aeb5be 100%);
+}
+
+.ad-cord__ball {
+  width: 22px;
+  height: 22px;
+  margin-top: -1px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffd9a8 0%, #ff9a3c 62%, #f07a12 100%);
+  box-shadow: 0 0 0 6px rgba(255, 154, 60, 0.12), 0 6px 16px rgba(240, 122, 18, 0.35);
+  transition: transform 260ms ease, box-shadow 320ms ease;
+}
+
+.ad-cord.is-pulled .ad-cord__rope {
+  height: 112px;
+}
+
+.ad-cord.is-pulled .ad-cord__ball {
+  transform: translateY(20px);
+}
+
+/* 暗态时球体更暗一点，亮起后发光 */
+.ad-panorama[data-lit='false'] .ad-cord__ball {
+  background: radial-gradient(circle at 34% 30%, #e8c79c 0%, #cf8b45 62%, #b9772f 100%);
+  box-shadow: 0 0 0 5px rgba(207, 139, 69, 0.1), 0 4px 10px rgba(120, 80, 30, 0.25);
+}
+
+.ad-cord__hint {
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fff1e6;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  animation: ad-hint-bob 1.8s ease-in-out infinite;
+}
+
+@keyframes ad-hint-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* ---------- 列表 ---------- */
+.ad-panorama__list {
+  margin: 30px 0 0;
+  padding: 18px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.ad-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 6px;
+  /* 一行痛点 + 一行解法：暗态也占住，亮起来不跳 */
+  padding: 0 0 16px;
+}
+
+.ad-row__no {
+  padding-top: 2px;
+  font-size: 15px;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: #c9cfd6;
+}
+
+.ad-row__pain {
+  margin: 0;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  transition: color 420ms ease;
+}
+
+.ad-row__solve {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 6px 0 0;
+  /* 暗态：内容不可见，但高度占好 */
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 300ms ease, transform 320ms ease, visibility 0s linear 300ms;
+}
+
+.ad-panorama[data-lit='true'] .ad-row__solve {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 360ms ease, transform 400ms cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s;
+}
+
+/* 逐条出现 */
+.ad-panorama[data-lit='true'] .ad-row:nth-child(1) .ad-row__solve {
+  transition-delay: 80ms;
+}
+.ad-panorama[data-lit='true'] .ad-row:nth-child(2) .ad-row__solve {
+  transition-delay: 150ms;
+}
+.ad-panorama[data-lit='true'] .ad-row:nth-child(3) .ad-row__solve {
+  transition-delay: 220ms;
+}
+.ad-panorama[data-lit='true'] .ad-row:nth-child(4) .ad-row__solve {
+  transition-delay: 290ms;
+}
+
+.ad-row__chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.ad-row__solve-text {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  letter-spacing: 0.01em;
+}
+
+/* 暗态：痛点发灰、编号更淡 */
+.ad-panorama[data-lit='false'] .ad-row__pain {
+  color: #9aa1a9;
+}
+
+.ad-panorama[data-lit='false'] .ad-row__no {
+  color: #d8dce1;
+}
+
+/* ---------- 结论 + 按钮 ---------- */
+.ad-panorama[data-lit='false'] .ad-panorama__summary {
+  border-top-color: transparent;
+}
+
+.ad-panorama__summary {
+  margin: auto 0 0;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-family: 'Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--navy-deep);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 380ms ease 260ms, transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1) 260ms;
+}
+
+.ad-panorama[data-lit='true'] .ad-panorama__summary {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ad-panorama__action {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.ad-panorama__next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 210px;
+  min-height: 48px;
+  padding: 0 30px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--navy-deep);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 380ms ease 320ms, transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1) 320ms;
+}
+
+.ad-panorama[data-lit='true'] .ad-panorama__next {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ad-panorama[data-lit='false'] .ad-panorama__next {
+  pointer-events: none;
+}
+
+.ad-panorama__next:active {
+  background: #0b1c2d;
+}
+
+.ad-panorama__arrow {
+  display: inline-flex;
+}
+
+.ad-panorama__arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 暗态整体压一层灰（不换配色，只降对比） */
+.ad-panorama[data-lit='false']::after {
+  content: '';
+  position: absolute;
+  inset: -8px -4px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(244, 245, 247, 0.36) 0%, rgba(244, 245, 247, 0.52) 100%);
+}
+
+.ad-panorama > *:not(.ad-cord) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-cord__hint {
+    animation: none;
+  }
+}
+
+
+

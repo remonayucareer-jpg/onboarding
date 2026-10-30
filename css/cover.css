@@ -1,0 +1,52 @@
+/* ==================== 一线版 · 首页（开屏页） ====================
+ * 整页就是设计稿那张图（已把 iOS 假状态栏和左右各 4px 边距裁进文件里）。
+ *
+ * 规则：
+ *   1. 图按宽度铺满，比例和设计稿一致（不缩小）；
+ *   2. 这一屏不多留任何内边距——把 .app 的 48px 页脚留白和 .view 的上下内边距都清零，
+ *      所以 390×844 的手机上刚好一屏，不会多出一截可滚。
+ */
+
+.fl-cover {
+  background: #f7f8fa;
+}
+
+.fl-cover__tap {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.14s ease;
+}
+
+.fl-cover__tap:active {
+  opacity: 0.94;
+}
+
+/* 宽度铺满、高度按原比例：字号与设计稿一致 */
+.fl-cover__poster {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 这一屏不显示产品顶栏和页脚，整页就是那张设计稿 */
+body[data-page='frontline-cover'] .header,
+body[data-page='frontline-cover'] .footer {
+  display: none;
+}
+
+/* 一线版给 .view 加了 20px 顶 / 18px 底内边距，那条规则更具体，这里必须写到同样具体才压得住 */
+body[data-track='frontline'][data-page='frontline-cover'] .view {
+  padding: 0;
+  animation: none;
+}
+
+/* .app 默认留了 48px 底部内边距（给页脚），这一屏没有页脚，去掉就不会多出一截可滚 */
+body[data-page='frontline-cover'] .app {
+  padding-bottom: 0;
+}
