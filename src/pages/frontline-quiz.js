@@ -128,6 +128,112 @@ HKR.pages = HKR.pages || {};
     );
   }
 
+  /* ---------- 测试统计（分域正确率 / 错题类型 / 一次通过） ----------
+   * 全部从答题记录现算，不额外存状态——log 里每题一条：
+   *   { index, question_id, group, chosen, correct }
+   *   A 组 = 读工单（房间号、送什么几个）
+   *   B 组 = 流程顺序与闭环
+   *   C 组 = 前置条件（公众号）
+   * 飞书那边按「一行一人」接这些字段即可，和姓名、酒店同一行。
+   */
+  var QUIZ_GROUPS = ['A', 'B', 'C'];
+
+  function round3(n) {
+    return Math.round(n * 1000) / 1000;
+  }
+
+  function pctText(rate) {
+    return rate === null || typeof rate === 'undefined' ? '' : Math.round(rate * 100) + '%';
+  }
+
+  /* 分域统计：每组答了几题、对了几题、错了几题、正确率 */
+  function computeStats(st, labels) {
+    var log = (st && st.log) || [];
+    var by = {};
+    QUIZ_GROUPS.forEach(function (group) {
+      by[group] = { attempted: 0, correct: 0, wrong: 0, rate: null };
+    });
+
+    log.forEach(function (row) {
+      var group = row && row.group;
+      if (!group || !by[group]) return; // 老版本的作答记录没有 group，跳过
+      by[group].attempted += 1;
+      if (row.correct) by[group].correct += 1;
+      else by[group].wrong += 1;
+    });
+
+    QUIZ_GROUPS.forEach(function (group) {
+      by[group].rate = by[group].attempted ? round3(by[group].correct / by[group].attempted) : null;
+    });
+
+    var wrongTotal = log.filter(function (row) {
+      return !row.correct;
+    }).length;
+
+    /* 错得最多的那一组：并列时按 A → B → C 取第一个；一道没错则为空 */
+    var worstGroup = '';
+    var worstWrong = 0;
+    QUIZ_GROUPS.forEach(function (group) {
+      if (by[group].wrong > worstWrong) {
+        worstWrong = by[group].wrong;
+        worstGroup = group;
+      }
+    });
+
+    return {
+      answered: st && typeof st.answered === 'number' ? st.answered : log.length,
+      correct: (st && st.correct) || 0,
+      wrongTotal: wrongTotal,
+      /* 一次通过 = 从头到尾一道没错（错一道就会补题，所以也等价于「答 4 题全对」） */
+      onePass: !!(st && st.passed) && wrongTotal === 0,
+      by: by,
+      worstGroup: worstGroup,
+      worstGroupLabel: worstGroup ? (labels && labels[worstGroup]) || worstGroup : '',
+      worstWrong: worstWrong
+    };
+  }
+
+  /* 拍平成一行：一列一个字段，飞书表格可以直接接 */
+  function statsFields(st, labels) {
+    var stats = computeStats(st, labels);
+    return {
+      answered: stats.answered,
+      correct_total: stats.correct,
+      wrong_total: stats.wrongTotal,
+      /* 一次通过率：这一条是 1 就代表「一次看懂」，飞书里求平均即可 */
+      one_pass: stats.onePass ? 1 : 0,
+      one_pass_text: stats.onePass ? '一次通过' : '补题后通过',
+      /* 错题类型：三组各错几题 + 错得最多的那一组 */
+      wrong_a: stats.by.A.wrong,
+      wrong_b: stats.by.B.wrong,
+      wrong_c: stats.by.C.wrong,
+      wrong_group: stats.worstGroup,
+      wrong_group_text: stats.worstGroup
+        ? stats.worstGroupLabel + '（错 ' + stats.worstWrong + ' 题）'
+        : '没有答错',
+      /* 分域正确率：每组 答对 ÷ 作答（没答过为 null） */
+      acc_a: stats.by.A.rate,
+      acc_b: stats.by.B.rate,
+      acc_c: stats.by.C.rate,
+      acc_a_text: pctText(stats.by.A.rate),
+      acc_b_text: pctText(stats.by.B.rate),
+      acc_c_text: pctText(stats.by.C.rate),
+      /* 逐题明细（按作答顺序）：A11 表示 A1 答对、B10 表示 B1 答错，用来事后算选项分布 */
+      answers_text: (st && st.log ? st.log : [])
+        .map(function (row) {
+          return (row.question_id || '?') + (row.correct ? '1' : '0');
+        })
+        .join(' ')
+    };
+  }
+
+  HKR.core = HKR.core || {};
+  HKR.core.quizStats = {
+    groups: QUIZ_GROUPS,
+    compute: computeStats,
+    fields: statsFields
+  };
+
   HKR.pages['frontline-quiz'] = {
     render: function (host, ctx) {
       var ui = ctx.ui;
@@ -147,18 +253,27 @@ HKR.pages = HKR.pages || {};
       /* 成绩口径（和业务方确认过）：正确率 = 答对数 ÷ 作答次数
        *   一次作答 = 点一次选项（不管对错）；通过时答对数 = 4
        *   所以 4 次答对是 100%，6 次才凑够是 67%。
-       * 上报只带三个指标：酒店名称、员工名称、正确率（剩下的一律不发）。 */
+       * 上报内容：酒店、姓名、正确率，外加三块统计（都由 statsFields 算好）——
+       *   一次通过（one_pass）、错题类型（wrong_a/b/c、wrong_group）、分域正确率（acc_a/b/c）。 */
       function buildResult(st, identity) {
         var answered = st.answered || (st.log ? st.log.length : 0);
         var accuracy = answered ? st.correct / answered : 1;
+        var quizNow = quizConfig(ctx) || {};
 
-        return {
+        var payload = {
           kind: 'result',
           hotel: (identity && identity.hotel) || '',
           name: (identity && identity.name) || '',
           accuracy: Math.round(accuracy * 1000) / 1000, // 0.667
           accuracy_text: Math.round(accuracy * 100) + '%' // 67%
         };
+
+        /* 分域正确率 / 错题类型 / 一次通过：一列一个字段，跟姓名、酒店一起进飞书 */
+        var stats = statsFields(st, quizNow.groupLabels || {});
+        Object.keys(stats).forEach(function (key) {
+          payload[key] = stats[key];
+        });
+        return payload;
       }
 
       function sendResultOnce(st) {
