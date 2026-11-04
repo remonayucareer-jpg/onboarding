@@ -98,7 +98,7 @@ HKR.components = HKR.components || {};
   }
 
   /* ---------- 真实产品界面复刻版（第二章第五幕：在界面上真实点击「领取」） ----------
-   * 布局对照 assets/images/phone-wo-detail-real.png：蓝色标题条 + 标签页 + 标题 + 状态徽标 +
+   * 布局对照 assets/images/phone-wo-detail-real.webp：蓝色标题条 + 标签页 + 标题 + 状态徽标 +
    * 需求行 + 基本信息字段 + 底部操作栏。字段取值全部来自 scenes.config.js，不新增任何字段。
    */
   function realBody(scene, claimed) {

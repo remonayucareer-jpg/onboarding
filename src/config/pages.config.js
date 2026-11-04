@@ -145,7 +145,7 @@ HKR.config = HKR.config || {};
     titleLines: ['AI 来帮忙了！', '酒店服务情境体验'],
     subtitle: '了解 AI 如何处理客人需求，以及员工接下来需要做什么。',
     /* 主视觉配图：换图只改这一行（文件放 assets/images/，见该目录 README） */
-    heroImage: 'assets/images/welcome-hero.jpg',
+    heroImage: 'assets/images/welcome-hero.webp',
     /* 信息条：icon 取 welcome.js 里的细线图标（clock / note），value 是屏幕上那行大字。
        预计用时直接引用 app.config.js#estimatedMinutes，改一处全局一致 */
     facts: [

@@ -10,7 +10,7 @@ HKR.config = HKR.config || {};
 
 HKR.config.scenes = {
   /* ============ 主场景一：送物工单（第二章互动剧情「酒店服务接单小游戏」，共十幕） ============
-   * 工单字段与状态全部对照真实产品截图（assets/images/phone-wo-detail-real.png，
+   * 工单字段与状态全部对照真实产品截图（assets/images/phone-wo-detail-real.webp，
    * 由项目根目录的「软件手机视角参考图片.png」裁切而来）：
    * 工单详情-#1274669 / 房间号 8011 / 服务分类 送物服务 / 服务项 纯净水x1 / 状态 待处理，
    * 领取后状态为「处理中」，底部按钮为「指派 / 解决」。
@@ -63,12 +63,12 @@ HKR.config.scenes = {
     },
     screenshots: {
       /* 真实产品截图（裁自「软件手机视角参考图片.png」）：工单详情 · 待处理 */
-      detail: 'assets/images/phone-wo-detail-real.png',
+      detail: 'assets/images/phone-wo-detail-real.webp',
       /* 真实产品截图（业务方提供的「收到工单提醒-替换图.png」，482 × 805）：公众号「工单处理通知」消息列表。
        * 这张素材自带手机外壳与红色高亮框（红框是素材里画好的，不是本页叠加的标注），
        * 所以第二幕不套设备框、也不补白底圆角 / 投影（素材含外壳外那圈柔和投影，套一层就是手机外面多一个直角方框）；
        * 文件缺失时回退到 phone.notify* 的模拟界面。 */
-      notify: 'assets/images/phone-wo-notify-real.png'
+      notify: 'assets/images/phone-wo-notify-real.webp'
     },
     game: {
       introLine: '十幕：前两幕只要看，第三幕起你动手。',
@@ -246,7 +246,7 @@ HKR.config.scenes = {
           kind: 'annotate',
           label: '学会看工单',
           title: '一起看：这三项怎么看',
-          /* 红框坐标按截图实际像素测得（assets/images/phone-wo-detail-real.png，664 × 924）：
+          /* 红框坐标按截图实际像素测得（assets/images/phone-wo-detail-real.webp，664 × 924）：
            * 房间号文字 y=689..711、服务分类 y=778..800、服务项 y=868..890，三行文字横向范围 x=31..347。
            * 下面的 left/top/width/height 都是换算成百分比的数值——换截图必须重新测，不要凭感觉调。 */
           steps: [
