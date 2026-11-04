@@ -1,4 +1,4 @@
-﻿/* 一线员工课件（11 屏）的内容配置
+/* 一线员工课件（11 屏）的内容配置
  * ---------------------------------------------------------------
  * 改文案 / 换插画 / 接录音，只改这一个文件，不用碰页面代码。
  *
@@ -53,7 +53,7 @@ HKR.config = HKR.config || {};
       title: '客人打电话',
       caption: '客人需要服务时，会打电话表达需求。',
       script: '客人想要什么，就会打房间里的电话。这个电话，AI 会替咱们接。',
-      image: 'assets/images/frontline-call.jpg',
+      image: 'assets/images/frontline-call.webp',
       imageAlt: '客人坐在客房床边，把电话听筒贴在耳边，正准备向酒店说明需求。',
       audioSrc: 'assets/audio/fl-01.mp3',
       nextLabel: '下一步',
@@ -66,7 +66,7 @@ HKR.config = HKR.config || {};
       title: 'AI 发来工单',
       caption: 'AI 听懂客人需求后，会把工单发到你的手机上。',
       script: 'AI 在电话里听明白客人要什么，就会自动开出一张工单，直接发到咱们手机上。咱们要干的活儿，全在这张工单上。',
-      image: 'assets/images/frontline-ai-workorder.jpg',
+      image: 'assets/images/frontline-ai-workorder.webp',
       imageAlt: 'AI 把客人的电话需求转换成工单，酒店员工在手机上收到新工单提醒。',
       audioSrc: 'assets/audio/fl-02.mp3',
       nextLabel: '下一步',
@@ -81,7 +81,7 @@ HKR.config = HKR.config || {};
       script: '手机一响，就是新工单来了。咱们点开这条消息，看看客人要什么。',
       /* 业务方给的整屏截图：微信聊天页里那条工单通知（红框是素材自带的），
          外面套一圈机身当手机 —— 截图本身自带状态栏和底栏，不再补 */
-      image: 'assets/images/frontline-notify-full.png',
+      image: 'assets/images/frontline-notify-full.webp',
       imageAlt:
         '手机上的公众号「华客极联云」聊天页：两条工单处理通知，红框圈住的是最新一条，门店 2.0演示酒店 0000，工单内容 水x1、成人一次性拖鞋x1。',
       imageWidth: 537,
@@ -107,7 +107,7 @@ HKR.config = HKR.config || {};
       caption: '房间号、服务分类、服务项，一个都别漏。',
       script: '拿到工单别急着动，先看三样最要紧的：房间号、服务分类、服务项。咱们一个一个来。',
       /* 业务方给的工单详情整屏截图（1080×2376），外面同样只补一圈机身 */
-      image: 'assets/images/frontline-detail-full.jpg',
+      image: 'assets/images/frontline-detail-full.webp',
       imageAlt:
         '手机上的工单详情：标题【0000】华客机器人/住中服务/送物服务，状态 待处理、超时，需求摘要，基本信息里的酒店、房间号 0000、服务分类 送物服务、服务项 水x1 与 成人一次性拖鞋x1。',
       imageWidth: 1080,
@@ -164,7 +164,7 @@ HKR.config = HKR.config || {};
       caption: '点一下「领取」，这张工单才归你处理。',
       script: '看完了就点下方的「领取」。点了领取，这一单就归咱们了，咱们就按工单上客人的需求，把这单做完。',
       /* 沿用第 4 屏那张详情图，只在底部的「领取」上做一个橙框 */
-      image: 'assets/images/frontline-detail-full.jpg',
+      image: 'assets/images/frontline-detail-full.webp',
       imageAlt:
         '手机上的工单详情：房间号 0000、服务分类 送物服务、服务项 水x1 与 成人一次性拖鞋x1，底部是蓝色的「领取」按钮。',
       imageWidth: 1080,
@@ -193,7 +193,7 @@ HKR.config = HKR.config || {};
       title: '布草间取物',
       caption: '去布草间，把客人要的东西拿上。',
       script: '去布草间，把东西拿上：这一单是一瓶水，一双成人一次性拖鞋。要是怕记不住，随时打开工单看一眼，照着拿就行。',
-      image: 'assets/images/frontline-06-pickup.jpg',
+      image: 'assets/images/frontline-06-pickup.webp',
       imageAlt: '员工在布草间从货架上取下客人需要的物品。',
       audioSrc: 'assets/audio/fl-06.mp3',
       nextLabel: '下一步',
@@ -207,7 +207,7 @@ HKR.config = HKR.config || {};
       title: '找到 0000 房',
       caption: '按房号找门，别送错房间。',
       script: '东西拿好了，就去找房间。这一单是零零零零房。到门口看一眼门牌，对上了再敲门，别走错门。',
-      image: 'assets/images/frontline-07-walk.jpg',
+      image: 'assets/images/frontline-07-walk.webp',
       imageAlt: '员工拿着客人要的物品，沿酒店走廊走向 0000 房。',
       audioSrc: 'assets/audio/fl-07.mp3',
       nextLabel: '下一步',
@@ -221,7 +221,7 @@ HKR.config = HKR.config || {};
       title: '递给客人',
       caption: '敲门，把东西交到客人手上。',
       script: '到了门口敲敲门，把东西递到客人手上。不过到这里还没完哦，咱们还得再回到工单上。',
-      image: 'assets/images/frontline-08-deliver.jpg',
+      image: 'assets/images/frontline-08-deliver.webp',
       imageAlt: '员工在 0000 房门口，把物品递到客人手上。',
       audioSrc: 'assets/audio/fl-08.mp3',
       nextLabel: '下一步',
@@ -235,7 +235,7 @@ HKR.config = HKR.config || {};
       caption: '服务做完，还要在手机上把工单关掉。',
       script: '东西送到了，咱们回到手机上。点底下的「解决」，点了它，这一单才算真正做完。',
       /* 业务方给的「领取后」整屏截图（556×1173），自带的播放/扳手两个悬浮按钮已从图里抹掉 */
-      image: 'assets/images/frontline-solve-full.png',
+      image: 'assets/images/frontline-solve-full.webp',
       imageAlt:
         '手机上的工单详情（已领取）：当前处理人 张璐璐，开始处理时间与最后更新时间，底部是指派 / 解决两个按钮。',
       imageWidth: 556,
@@ -277,8 +277,8 @@ HKR.config = HKR.config || {};
       ],
       qrHint: '长按两张二维码进行关注，课前务必完成。',
       qrNotes: [
-        '「华客极联云」：新工单会推到这里，不关注就收不到。',
-        '「华客微服务」：工单上遇到问题，可以在这里自动报障；具体怎么用，上课时老师会带着讲一遍。'
+        '「华客极联云」：新工单推到这里，不关注收不到。',
+        '「华客微服务」：工单出问题，在这里报障。'
       ],
       audioSrc: 'assets/audio/fl-11.mp3',
       /* 关注完先进测试说明页，再进测试 */
@@ -317,7 +317,7 @@ HKR.config = HKR.config || {};
   var quizTickets = [
     {
       key: 't1',
-      image: 'assets/images/quiz-info-1.jpg',
+      image: 'assets/images/quiz-info-1.webp',
       room: '0812',
       item: '矿泉水',
       unit: '瓶',
@@ -329,7 +329,7 @@ HKR.config = HKR.config || {};
     },
     {
       key: 't2',
-      image: 'assets/images/quiz-info-2.jpg',
+      image: 'assets/images/quiz-info-2.webp',
       room: '1205',
       item: '衣架',
       unit: '个',
@@ -340,7 +340,7 @@ HKR.config = HKR.config || {};
     },
     {
       key: 't3',
-      image: 'assets/images/quiz-info-3.jpg',
+      image: 'assets/images/quiz-info-3.webp',
       room: '1603',
       item: '毛巾',
       unit: '条',
@@ -447,7 +447,7 @@ HKR.config = HKR.config || {};
    */
   var cover = {
     /* 开屏页直接用设计稿那张图（780×1688 = 390×844 @2x），换图只改这一行 */
-    poster: 'assets/images/start-page/start-cover.png?v=20261104',
+    poster: 'assets/images/start-page/start-cover.webp?v=20261105',
     posterAlt: '一线员工预习材料：10 个学习画面，6 分钟看完，答对 4 题就能通过。',
     nextPageId: 'frontline-comic'  };
   /* ============ 开场漫画（落地首屏） ============
@@ -474,7 +474,7 @@ HKR.config = HKR.config || {};
     panels: [
       {
         shape: 'wide',
-        src: 'assets/images/comic/fl-comic-1.webp?v=20261104',
+        src: 'assets/images/comic/fl-comic-1.webp?v=20261105',
         alt: '她推着清洁车，腋下夹着一瓶水、手里托着浴巾，对讲机里又来了一条 301 房的需求。',
         /* 和第③格同一种描边文字（白字 + 深蓝描边），\n 是换行 */
         onoma: '301房间需要浴巾',
@@ -485,7 +485,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'small',
-        src: 'assets/images/comic/fl-comic-2.webp?v=20261104',
+        src: 'assets/images/comic/fl-comic-2.webp?v=20261105',
         alt: '她挠着后脑勺，拖鞋还留在清洁车上没拿。',
         /* 第②格：她挠头、拖鞋还留在车上 */
         onoma: '这是哪间来着？',
@@ -496,7 +496,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'small',
-        src: 'assets/images/comic/fl-comic-3.webp?v=20261104',
+        src: 'assets/images/comic/fl-comic-3.webp?v=20261105',
         alt: '客房门打开，客人一脸困惑，她站在门外有些不好意思。',
         /* 空泡泡里放她的一声「啊？」：泡泡中心约 (53%, 16%) */
         onoma: '啊？',
@@ -509,7 +509,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'banner',
-        src: 'assets/images/comic/fl-comic-4.webp?v=20261104',
+        src: 'assets/images/comic/fl-comic-4.webp?v=20261105',
         alt: '她扶着额头，眼睛打转，怀里东西快掉了。',
         onoma: '晕……',
         x: 78,
