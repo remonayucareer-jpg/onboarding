@@ -148,6 +148,12 @@ HKR.components = HKR.components || {};
     return true;
   }
 
+  /* 跳动的小手：直接用切好的手形图（assets/images/tap-hand.png），只出现在「当前这一格」 */
+  var TAP_HAND =
+    '<span class="fl-spot__hand" aria-hidden="true">' +
+    '<img src="assets/images/tap-hand.png?v=20261106" alt="" />' +
+    '</span>';
+
   /* 三个字段的热区：一次只出一个框（点完一个才出下一个）。
      已经点过的框变绿勾，当前这个带序号、会呼吸；还没轮到的不渲染。 */
   function spotsMarkup(screen, ctx, ui) {
@@ -166,6 +172,7 @@ HKR.components = HKR.components || {};
             aria-label="${step.label}"
           >
             <span class="fl-spot__index">${isCurrent ? String(index + 1) : '✓'}</span>
+            ${ui.raw(isCurrent ? TAP_HAND : '')}
           </span>
         `;
       })
@@ -687,6 +694,12 @@ HKR.components = HKR.components || {};
     render: render,
     /* 换页时由路由调用：离开这一屏就停掉还在播的讲解
      * （同一屏重画不会走这里，所以分步录音不会被掐断） */
-    stopAudio: stopAudio
+    stopAudio: stopAudio,
+    /* 给不在本组件里的页面复用同一个播放器（比如测试说明页）：
+     * 共用一个 audioEl，换页时路由那次 stopAudio 一样能把它停掉 */
+    play: function (screenLike, button, ui, options) {
+      if (!screenLike || !screenLike.audioSrc) return;
+      playAudio(screenLike, button, ui, options || {});
+    }
   };
 })();
