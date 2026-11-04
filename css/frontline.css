@@ -1330,3 +1330,51 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 
 
 
+
+/* ==================== 跳动的小手（第 4 屏三个字段） ====================
+ * 只挂在「当前要点的这一格」右下角，手指朝左上、45 度斜着点过来；
+ * 点完这一格，小手自动跟到下一格，三格都点完就消失。
+ */
+.fl-spot__hand {
+  position: absolute;
+  right: 0;
+  bottom: -40px;
+  display: block;
+  width: 40px;
+  height: 48px;
+  filter: drop-shadow(0 2px 4px rgba(23, 54, 93, 0.22));
+  animation: fl-tap-hand 1.25s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 图片本身手指朝上，这里逆时针转 45 度变成「朝左上」 */
+.fl-spot__hand img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-45deg);
+  transform-origin: 72% 28%;
+}
+
+/* 沿着手指方向一下一下地「点」：左上 -> 回来 */
+@keyframes fl-tap-hand {
+  0%,
+  55%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-6px, -6px);
+  }
+  70% {
+    transform: translate(2px, 2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-spot__hand {
+    animation: none;
+  }
+}
+
+/* 屏幕窄的时候把字缩一点，别挤到字段值 */
