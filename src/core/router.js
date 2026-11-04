@@ -38,6 +38,9 @@ HKR.core = HKR.core || {};
   var pendingId = null;
   var lockTimer = null;
   var resumeHintMeta = null;
+  /* 「上次真正停在哪一页」：进封面/欢迎页之前留的底。
+   * enterPage 会把 last_page_id 改写成当前页，所以必须单独存一份，刷新后也能用。 */
+  var lastResumable = null;
 
   function metaOf(id) {
     for (var i = 0; i < pages.length; i++) {
@@ -50,15 +53,29 @@ HKR.core = HKR.core || {};
     return order.indexOf(id);
   }
 
-  /* 断点续学：只有「流程还没走完 + 上次停在欢迎页之后的页面」才算可继续。
+  /* 这一页算不算「可以继续的进度」：要在这条线的第一页之后，且不是片头 */
+  function isResumableMeta(meta) {
+    if (!meta) return false;
+    var ownOrder = trackOrder(meta.track);
+    if (ownOrder.indexOf(meta.id) <= 0) return false;
+    if (meta.id === 'frontline-comic') return false;
+    return true;
+  }
+
+  /* 断点续学：只有「流程还没走完 + 上次停在第一页之后的页面」才算可继续。
    * 返回页面元信息（含 chapter / stepLabel，直接给首页做按钮文案），没有则返回 null。
-   * 注意：路由不会拿它自动跳转，是否继续交给用户点按钮决定。 */
+   * 注意：路由不会拿它自动跳转，是否继续交给用户点按钮决定。
+   * 一线版：中途退出（含答题到一半）再进来，从上次那一页接着走，不从头开始。 */
   function resumeTarget() {
     var session = store.getState().session;
     if (session.completion_status === 'completed') return null;
+    /* 已经停在封面/欢迎页：last_page_id 已被改写成当前页，
+     * 这时要用「进这一页之前」留的底，否则永远查不到进度 */
+    if (currentId === 'frontline-cover' || currentId === 'welcome') {
+      return lastResumable && lastResumable.id !== currentId ? lastResumable : null;
+    }
     var meta = metaOf(session.last_page_id);
-    if (!meta || meta.track !== 'admin') return null;
-    return trackOrder('admin').indexOf(meta.id) > 0 ? meta : null;
+    return isResumableMeta(meta) ? meta : null;
   }
 
   /* 首页「继续上次进度」入口用的值：进入下一页前会先留底（见 render），
@@ -172,6 +189,8 @@ HKR.core = HKR.core || {};
     }
 
     /* 先留底：store.enterPage() 会把 last_page_id 改写成当前页，改写后就查不到「上次停在哪儿」了 */
+    var prevMeta = metaOf(store.getState().session.last_page_id);
+    if (isResumableMeta(prevMeta)) lastResumable = prevMeta;
     resumeHintMeta = resumeTarget();
     currentId = pageId;
     store.enterPage(pageId);
