@@ -221,12 +221,19 @@ HKR.pages = HKR.pages || {};
           });
         }
         paint();
+        /* B：答完把解析滚进视野（底部按钮已经固定，这里只要让「对不对 + 解析」露出来） */
+        var fb = ui.$('.fl-quiz__feedback', host);
+        if (fb && fb.scrollIntoView) {
+          fb.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
       });
 
       /* 下一题：答错时同组补的题已经接在队尾，这里只往后走一格 */
       ui.delegate(host, '[data-quiz-next]', 'click', function () {
         ctx.store.nextQuizQuestion();
         paint();
+        /* 换题回到顶部，新题从头看 */
+        if (window.scrollTo) window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
       /* 测试完成后不再给「再看一遍 / 结束」这类往回走的按钮：这一课到此为止。
