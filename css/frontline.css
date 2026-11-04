@@ -1378,3 +1378,37 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 }
 
 /* 屏幕窄的时候把字缩一点，别挤到字段值 */
+
+/* ==================== 测试页：底部固定按钮（A 方案） ====================
+ * 题目再长，「开始答题 / 下一题」也一直贴在屏幕底部，不用往下找。
+ * 内容区补足底部留白，最后一行不会被固定条压住。
+ */
+body[data-page='frontline-quiz-intro'] .fl-intro,
+body[data-page='frontline-quiz'] .fl-quiz {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+body[data-page='frontline-quiz-intro'] .fl-intro__action,
+body[data-page='frontline-quiz'] .fl-quiz__action {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 0;
+  width: 100%;
+  max-width: 560px;
+  margin: 0;
+  transform: translateX(-50%);
+  padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+  background: #fff;
+  box-shadow: 0 -8px 20px rgba(16, 39, 68, 0.1);
+}
+
+/* 说明页底部那句「每轮 N 道题…」会被固定条挡住；信息上方已有，这里收起来 */
+body[data-page='frontline-quiz-intro'] .fl-intro__meta {
+  display: none;
+}
+
+/* 答完题后，「下一题」出现时不要和解析粘在一起 */
+body[data-page='frontline-quiz'] .fl-quiz__action .btn {
+  margin: 0;
+}
