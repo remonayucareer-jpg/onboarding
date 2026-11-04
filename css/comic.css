@@ -145,7 +145,14 @@
 
 .fl-comic__onoma--sub {
   font-size: 13px;
-  -webkit-text-stroke-width: 3px;
+  /* 和第四格一致：深蓝字 + 白色描边（暖黄背景上比反白更好读） */
+  color: #17365d;
+  -webkit-text-stroke: 3px #fff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.9); /* 白色微光：压在深色浴衣上也能分开 */
+  /* 允许换行：多行文字（比如第①格两行）要能断行 */
+  white-space: normal;
+  max-width: 68%; /* 第②格小画幅，放长一点的句子 */
+  line-height: 1.35;
 }
 
 /* ---------- 结尾：一句共情 + 产品同款按钮 ---------- */

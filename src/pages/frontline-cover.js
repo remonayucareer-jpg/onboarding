@@ -24,7 +24,7 @@ HKR.pages = HKR.pages || {};
               <img
                 class="fl-cover__poster"
                 src="${esc(cfg.poster || 'assets/images/start-page/开始页-一线员工预习-浅色版.png')}"
-                alt="${esc(cfg.posterAlt || '一线员工预习材料：10 个学习画面，6 分钟看完，答对 2 题就能通过。')}"
+                alt="${esc(cfg.posterAlt || '一线员工预习材料：10 个学习画面，6 分钟看完，答对 4 题就能通过。')}"
               />
             </button>
           </section>

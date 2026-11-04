@@ -12,8 +12,19 @@ HKR.pages = HKR.pages || {};
     render: function (host, ctx) {
       var ui = ctx.ui;
       var cfg = ctx.config.frontline.quizIntro;
-      var total = (ctx.config.frontline.quiz.questions || []).length;
-      var pass = ctx.config.frontline.quiz.passCorrect || 2;
+      var quiz = ctx.config.frontline.quiz || {};
+      var needs = quiz.passGroups || { A: 2, B: 1, C: 1 };
+      var labels = quiz.groupLabels || {};
+      /* 一次考 4 题：读工单 2 题 + 流程 1 题 + 前置条件 1 题（按 passGroups 算，不写死） */
+      var pass = quiz.passCorrect || 4;
+      var total = Object.keys(needs).reduce(function (sum, group) {
+        return sum + needs[group];
+      }, 0);
+      var needText = Object.keys(needs)
+        .map(function (group) {
+          return (labels[group] || group) + ' ' + needs[group] + ' 题';
+        })
+        .join(' + ');
       var pointsHtml = cfg.points
         .map(function (point) {
           return '<li class="fl-intro__point">' + ui.escapeHtml(point) + '</li>';
@@ -34,7 +45,7 @@ HKR.pages = HKR.pages || {};
               ${ui.raw(pointsHtml)}
             </ul>
 
-            <p class="fl-intro__highlight">答对 ${pass} 题就算完成（不用全部答对）</p>
+            <p class="fl-intro__highlight">答对 ${pass} 题就算完成（${needText}）</p>
 
             <p class="fl-intro__note">${cfg.note}</p>
 
@@ -47,7 +58,7 @@ HKR.pages = HKR.pages || {};
                 <span>${cfg.cta}</span>
                 <span class="btn__arrow" aria-hidden="true">${ui.raw(ARROW)}</span>
               </button>
-              <p class="fl-intro__meta">一共 ${total} 道题，慢慢答</p>
+              <p class="fl-intro__meta">每轮 ${total} 道题，答错会补一道同类题</p>
             </div>
           </section>
         `

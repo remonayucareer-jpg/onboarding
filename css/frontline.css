@@ -1058,6 +1058,16 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   background: inherit;
 }
 
+/* 纯文字题（流程顺序 / 前置条件）：没有工单截图，题干和选项更长，字号收一档 */
+.fl-quiz--plain .fl-quiz__prompt {
+  font-size: 19px;
+}
+
+.fl-quiz--plain .fl-quiz__option {
+  font-size: 17px;
+  line-height: 1.45;
+}
+
 .fl-quiz__feedback {
   padding: 12px 14px;
   border-radius: var(--radius);

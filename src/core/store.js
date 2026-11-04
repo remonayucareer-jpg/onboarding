@@ -106,19 +106,9 @@ HKR.core = HKR.core || {};
         name: '',
         savedAt: null
       },
-      /* 课后测试：一屏一题、答完立即判对错；全卷答对 passCorrect 题就算通过 */
-      frontlineQuiz: {
-        index: 0, // 当前第几题（0 起，指 order 里的位置）
-        order: [], // 九道题的出场顺序（每次开始测试重新洗牌）
-        optionOrders: [], // 每道题的选项顺序（一起洗，免得背「第二个」）
-        correct: 0, // 已答对几题
-        revealed: false, // 当前这题是不是已经作答
-        chosen: null, // 她选的那一项
-        lastCorrect: false,
-        log: [], // 每次作答一条：{ index, chosen, correct }
-        passed: false,
-        reportedAt: null // 成绩上报的时间（防止刷新后重复上报）
-      },
+      /* 课后测试：每次 1 张工单的 2 道题 + 1 道流程 + 1 道前置条件；
+         答错时从同一组补一道新题，凑够 2 道工单 + 1 道流程 + 1 道前置条件就通过 */
+      frontlineQuiz: defaultQuizState(),
       feedback: {
         feedback_clarity: null,
         learning_need_category: null,
@@ -534,22 +524,166 @@ HKR.core = HKR.core || {};
 
   /* ---------- 课后测试 ---------- */
 
-  function quizPassTarget() {
-    var quiz = HKR.config.frontline && HKR.config.frontline.quiz;
-    return (quiz && quiz.passCorrect) || 2;
+  function quizConfig() {
+    return (HKR.config.frontline && HKR.config.frontline.quiz) || { questions: [] };
   }
 
-  /* 选了一个选项：记下来、判对错；答对够数就把 passed 置上 */
+  function quizNeeds() {
+    return quizConfig().passGroups || { A: 2, B: 1, C: 1 };
+  }
+
+  /* 空白的测试状态：进测试页时由 startQuizPaper() 组卷 */
+  function defaultQuizState() {
+    return {
+      paperVersion: 2,
+      queue: [], // 本场要答的题（含答错后补的题），选项顺序在入队时洗好
+      index: 0, // 当前答到 queue 的第几题（0 起）
+      correctByGroup: { A: 0, B: 0, C: 0 }, // 每组已答对几题，判通过用
+      correct: 0, // 已答对总数（= 4 时通过）
+      answered: 0, // 一共作答几题（含答错的，算正确率用）
+      revealed: false, // 当前这题是不是已经作答
+      chosen: null, // 她选的那一项
+      lastCorrect: false,
+      log: [], // 每次作答一条：{ index, question_id, group, chosen, correct }
+      passed: false,
+      reportedAt: null // 成绩上报的时间（防止刷新后重复上报）
+    };
+  }
+
+  function pickRandom(list) {
+    if (!list || !list.length) return null;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  /* Fisher–Yates 洗牌，返回新数组 */
+  function shuffleList(list) {
+    var arr = (list || []).slice();
+    for (var i = arr.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  /* 把题库里的一道题变成「这一场要答的题」：选项顺序洗好一起存进状态，
+     刷新 / 退出重进时题目和选项都不会变。 */
+  function dealQuizQuestion(question) {
+    return {
+      id: question.id,
+      group: question.group,
+      ticket: question.ticket || null,
+      image: question.image || '',
+      prompt: question.prompt,
+      options: shuffleList(question.options || []),
+      answer: question.answer,
+      explain: question.explain || ''
+    };
+  }
+
+  /* 第一轮组卷：按 config 里的 paper 配置抽题。
+     A 组是 perTicket：随机一张票，把它同票的两道题按顺序一起拿出来（同票连问）。 */
+  function buildQuizPaper() {
+    var quiz = quizConfig();
+    var all = quiz.questions || [];
+    var queue = [];
+
+    (quiz.paper || []).forEach(function (slot) {
+      var pool = all.filter(function (q) {
+        return q.group === slot.group;
+      });
+      if (!pool.length) return;
+
+      var picked = [];
+      if (slot.perTicket) {
+        var tickets = [];
+        pool.forEach(function (q) {
+          if (q.ticket && tickets.indexOf(q.ticket) === -1) tickets.push(q.ticket);
+        });
+        var ticket = pickRandom(tickets);
+        var ticketPool = pool.filter(function (q) {
+          return q.ticket === ticket;
+        });
+        picked = ticketPool.slice(0, slot.count || ticketPool.length);
+      } else {
+        picked = shuffleList(pool).slice(0, slot.count || 1);
+      }
+
+      picked.forEach(function (q) {
+        queue.push(dealQuizQuestion(q));
+      });
+    });
+
+    return queue;
+  }
+
+  /* 答错后从同一组补一道题：优先补本场还没出现过的题，同组用完了就重新洗一轮 */
+  function pickQuizReplacement(group, queue) {
+    var all = quizConfig().questions || [];
+    var used = {};
+    queue.forEach(function (item) {
+      used[item.id] = true;
+    });
+
+    var pool = all.filter(function (q) {
+      return q.group === group && !used[q.id];
+    });
+    if (!pool.length) {
+      pool = all.filter(function (q) {
+        return q.group === group;
+      });
+    }
+    var question = pickRandom(pool);
+    return question ? dealQuizQuestion(question) : null;
+  }
+
+  function isQuizPassed(q) {
+    var needs = quizNeeds();
+    return Object.keys(needs).every(function (group) {
+      return (q.correctByGroup[group] || 0) >= needs[group];
+    });
+  }
+
+  /* 开始一轮测试：随机一张工单的 2 题 + 1 道流程 + 1 道前置条件 */
+  function startQuizPaper() {
+    var fresh = defaultQuizState();
+    fresh.queue = buildQuizPaper();
+    update(function (s) {
+      s.frontlineQuiz = fresh;
+    });
+    return state.frontlineQuiz;
+  }
+
+  /* 选了一个选项：记下来、判对错；答错就从同组补一道，答对够数就把 passed 置上 */
   function answerQuiz(optionValue, isCorrect) {
     update(function (s) {
       var q = s.frontlineQuiz;
       if (q.revealed) return; // 同一题不重复计分
+      var item = q.queue[q.index];
+      if (!item) return;
+
       q.revealed = true;
       q.chosen = optionValue;
       q.lastCorrect = isCorrect === true;
-      if (q.lastCorrect) q.correct += 1;
-      q.log.push({ index: q.index, chosen: optionValue, correct: q.lastCorrect });
-      if (q.correct >= quizPassTarget()) q.passed = true;
+      q.answered += 1;
+      q.log.push({
+        index: q.index,
+        question_id: item.id,
+        group: item.group,
+        chosen: optionValue,
+        correct: q.lastCorrect
+      });
+
+      if (q.lastCorrect) {
+        q.correct += 1;
+        q.correctByGroup[item.group] = (q.correctByGroup[item.group] || 0) + 1;
+      } else {
+        var extra = pickQuizReplacement(item.group, q.queue);
+        if (extra) q.queue.push(extra);
+      }
+
+      q.passed = isQuizPassed(q);
     });
     return state.frontlineQuiz;
   }
@@ -570,65 +704,20 @@ HKR.core = HKR.core || {};
       q.revealed = false;
       q.chosen = null;
       q.lastCorrect = false;
-    });
-    return state.frontlineQuiz;
-  }
 
-  /* 九道题都答完还没凑够 2 题正确：这一套题重新洗牌、从第一题接着来一轮。
-   * 已答对的数量和作答明细都保留（正确率按所有作答算），只把题号和作答态归零。 */
-  function restartQuizDeck(total, optionCounts) {
-    update(function (s) {
-      var q = s.frontlineQuiz;
-      q.index = 0;
-      q.order = shuffled(total || 0);
-      q.optionOrders = (optionCounts || []).map(function (n) {
-        return shuffled(n);
-      });
-      q.revealed = false;
-      q.chosen = null;
-      q.lastCorrect = false;
-    });
-    return state.frontlineQuiz;
-  }
-
-  /* 洗牌：Fisher–Yates，就地打乱一个新数组 */
-  function shuffled(count) {
-    var arr = [];
-    for (var i = 0; i < count; i += 1) arr.push(i);
-    for (var j = arr.length - 1; j > 0; j -= 1) {
-      var k = Math.floor(Math.random() * (j + 1));
-      var tmp = arr[j];
-      arr[j] = arr[k];
-      arr[k] = tmp;
-    }
-    return arr;
-  }
-
-  /* 开始一轮测试：题目顺序和每题选项顺序都重新洗一遍（同一轮里不会再变） */
-  function shuffleQuiz(total, optionCounts) {
-    update(function (s) {
-      s.frontlineQuiz.order = shuffled(total || 0);
-      s.frontlineQuiz.optionOrders = (optionCounts || []).map(function (n) {
-        return shuffled(n);
-      });
+      /* 保险：万一队尾没有补上题（同组题库为空），再兜一道，避免卡死 */
+      if (!q.passed && q.index >= q.queue.length) {
+        var last = q.queue[q.queue.length - 1];
+        var extra = last ? pickQuizReplacement(last.group, q.queue) : null;
+        if (extra) q.queue.push(extra);
+      }
     });
     return state.frontlineQuiz;
   }
 
   function resetQuiz() {
     update(function (s) {
-      s.frontlineQuiz = {
-        index: 0,
-        order: [],
-        optionOrders: [],
-        correct: 0,
-        revealed: false,
-        chosen: null,
-        lastCorrect: false,
-        log: [],
-        passed: false,
-        reportedAt: null
-      };
+      s.frontlineQuiz = defaultQuizState();
     });
     return state.frontlineQuiz;
   }
@@ -705,8 +794,7 @@ HKR.core = HKR.core || {};
     saveIdentity: saveIdentity,
     nextQuizQuestion: nextQuizQuestion,
     resetQuiz: resetQuiz,
-    restartQuizDeck: restartQuizDeck,
-    shuffleQuiz: shuffleQuiz,
+    startQuizPaper: startQuizPaper,
     saveFeedback: saveFeedback,
     saveOfficialAccount: saveOfficialAccount,
     markHandoffCardViewed: markHandoffCardViewed,

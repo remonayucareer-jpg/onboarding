@@ -1,4 +1,4 @@
-/* 一线员工课件（11 屏）的内容配置
+﻿/* 一线员工课件（11 屏）的内容配置
  * ---------------------------------------------------------------
  * 改文案 / 换插画 / 接录音，只改这一个文件，不用碰页面代码。
  *
@@ -293,10 +293,11 @@ HKR.config = HKR.config || {};
     title: '先做个小测试',
     subtitle: '看看刚才看的内容记住了没有，不用紧张。',
     points: [
-      '都对着工单回答：房间号、要送什么、要送几个',
+      '读一张工单：房间号、要送什么、送几个',
+      '再答一道流程顺序、一道前置条件',
       '每道题选一个答案，选完马上告诉你对不对'
     ],
-    note: '答错了也没关系，可以再看一遍、再来一次。',
+    note: '答错了也没关系，会补一道同类题，答对 4 题就结束。',
     /* 这一页的讲解录音：录好放到 assets/audio/ 下，把文件名填进来就自动生效
      * （留空时点播放键只会提示"录音还在制作"） */
     audioSrc: 'assets/audio/fl-intro.mp3',
@@ -305,9 +306,13 @@ HKR.config = HKR.config || {};
     nextPageId: 'frontline-quiz'
   };
 
-  /* ============ 课后测试 ============
-   * 三张工单截图（只裁了「基本信息」那一栏，字放到最大），每张问三题：房间号 / 物品 / 数量。
-   * 规则：一屏一题、答完立即判对错并给一句解释；**全卷答对 2 题就算通过**（业务方定的）。
+  /* ============ 课后测试（12 题题库） ============
+   * A 组·读工单（6 题）：3 张工单截图，每张 2 题（房间号 / 要送什么、送几个），
+   *                       同一张票的两题连问；
+   * B 组·顺序与闭环（3 题）：送物流程的先后顺序和「点解决」闭环；
+   * C 组·前置条件（3 题）：关注公众号、收到提醒先看什么。
+   * 通过规则：答对 4 题 —— A 组 2 题 + B 组 1 题 + C 组 1 题；
+   * 某组答错时从同组再补一道新题（A 组允许换一张票），凑够 4 题就结束。
    */
   var quizTickets = [
     {
@@ -317,7 +322,10 @@ HKR.config = HKR.config || {};
       item: '矿泉水',
       unit: '瓶',
       qty: 1,
-      itemOnTicket: '水x1'
+      itemOnTicket: '水x1',
+      what: '矿泉水 1 瓶',
+      /* 合并成一道「要送什么、送几个」：正确项 + 两个干扰项（选项以配置为准，页面逐题洗牌） */
+      whatOptions: ['矿泉水 1 瓶', '矿泉水 2 瓶', '拖鞋 1 双']
     },
     {
       key: 't2',
@@ -326,7 +334,9 @@ HKR.config = HKR.config || {};
       item: '衣架',
       unit: '个',
       qty: 2,
-      itemOnTicket: '衣架x2'
+      itemOnTicket: '衣架x2',
+      what: '衣架 2 个',
+      whatOptions: ['衣架 2 个', '衣架 1 个', '毛巾 2 条']
     },
     {
       key: 't3',
@@ -335,21 +345,23 @@ HKR.config = HKR.config || {};
       item: '毛巾',
       unit: '条',
       qty: 1,
-      itemOnTicket: '毛巾x1'
+      itemOnTicket: '毛巾x1',
+      what: '毛巾 1 条',
+      whatOptions: ['毛巾 1 条', '毛巾 2 条', '矿泉水 1 瓶']
     }
   ];
 
   var ALL_ROOMS = quizTickets.map(function (t) {
     return t.room;
   });
-  var ALL_ITEMS = quizTickets.map(function (t) {
-    return t.item;
-  });
 
   var quizQuestions = [];
-  quizTickets.forEach(function (t) {
+  quizTickets.forEach(function (t, index) {
+    var no = index * 2 + 1;
     quizQuestions.push({
-      id: t.key + '-room',
+      id: 'A' + no,
+      group: 'A',
+      ticket: t.key,
       image: t.image,
       prompt: '这张工单要送到哪个房间？',
       options: ALL_ROOMS.slice(),
@@ -357,24 +369,78 @@ HKR.config = HKR.config || {};
       explain: '看「房间号」那一行：写的是 ' + t.room + '，别送错门。'
     });
     quizQuestions.push({
-      id: t.key + '-item',
+      id: 'A' + (no + 1),
+      group: 'A',
+      ticket: t.key,
       image: t.image,
-      prompt: '客人要的是什么？',
-      options: ALL_ITEMS.slice(),
-      answer: t.item,
-      explain: '看「服务项」：「' + t.itemOnTicket + '」说明要的是' + t.item + '。'
-    });
-    quizQuestions.push({
-      id: t.key + '-qty',
-      image: t.image,
-      prompt: '要送几个？',
-      options: ['1', '2', '3'].map(function (n) {
-        return n + ' ' + t.unit;
-      }),
-      answer: t.qty + ' ' + t.unit,
-      explain: '「' + t.itemOnTicket + '」里的 x' + t.qty + ' 就是 ' + t.qty + ' ' + t.unit + '。'
+      prompt: '要送什么、送几个？',
+      options: t.whatOptions.slice(),
+      answer: t.what,
+      explain: '「服务项」写的是「' + t.itemOnTicket + '」：x 后面是数量，所以是' + t.what + '。'
     });
   });
+
+  /* B 组：顺序与闭环——拿到单子怎么走、送到之后做什么、忘了点解决会怎样 */
+  var quizFlowQuestions = [
+    {
+      id: 'B1',
+      group: 'B',
+      prompt: '拿到一张新工单，下面哪个做法是对的？',
+      options: [
+        '看房号 → 点领取 → 送过去 → 送完就走',
+        '看房号 → 点领取 → 送过去 → 点解决',
+        '看房号 → 送过去 → 点解决 → 点领取'
+      ],
+      answer: '看房号 → 点领取 → 送过去 → 点解决',
+      explain: '顺序是：看房号 → 点「领取」→ 送过去 → 回手机点「解决」。送完就走，工单等于没闭环。'
+    },
+    {
+      id: 'B2',
+      group: 'B',
+      prompt: '东西已经递到客人手上，接下来最该做什么？',
+      options: ['直接去下一单', '回手机上点「解决」', '等主管来关'],
+      answer: '回手机上点「解决」',
+      explain: '送到不等于结束，要回手机上点「解决」，工单才算走完。'
+    },
+    {
+      id: 'B3',
+      group: 'B',
+      prompt: '送完忘了点「解决」，会怎么样？',
+      options: ['没什么影响', '工单一直挂着，可能超时', '客人会自己点'],
+      answer: '工单一直挂着，可能超时',
+      explain: '工单不会自己关，一直挂着可能超时，所以送完要马上点「解决」。'
+    }
+  ];
+
+  /* C 组：前置条件——公众号、收到提醒的第一件事 */
+  var quizPreconditionQuestions = [
+    {
+      id: 'C1',
+      group: 'C',
+      prompt: '没关注「华客极联云」，还能收到新工单吗？',
+      options: ['能', '不能'],
+      answer: '不能',
+      explain: '新工单会推到「华客极联云」，没关注就收不到。'
+    },
+    {
+      id: 'C2',
+      group: 'C',
+      prompt: '手机上收到工单提醒，第一件事做什么？',
+      options: ['直接去仓库拿', '点开看房号和要送什么', '打电话问客人'],
+      answer: '点开看房号和要送什么',
+      explain: '先点开看房号和要送什么，再去拿东西，免得跑错房间、拿错物品。'
+    },
+    {
+      id: 'C3',
+      group: 'C',
+      prompt: '这两个公众号分别干什么？',
+      options: ['都收工单', '一个收工单、一个报障', '都报障'],
+      answer: '一个收工单、一个报障',
+      explain: '一个负责收新工单，一个负责报障，两个都要关注。'
+    }
+  ];
+
+  quizQuestions = quizQuestions.concat(quizFlowQuestions, quizPreconditionQuestions);
 
   /* ============ 开场封面（真正的落地首屏） ============
    * 一句“这是一份正式材料” + 三个数字 + 三条说明，然后进开场漫画。
@@ -382,7 +448,7 @@ HKR.config = HKR.config || {};
   var cover = {
     /* 开屏页直接用设计稿那张图（780×1688 = 390×844 @2x），换图只改这一行 */
     poster: 'assets/images/start-page/start-cover.png',
-    posterAlt: '一线员工预习材料：10 个学习画面，6 分钟看完，答对 2 题就能通过。',
+    posterAlt: '一线员工预习材料：10 个学习画面，6 分钟看完，答对 4 题就能通过。',
     nextPageId: 'frontline-comic'  };
   /* ============ 开场漫画（落地首屏） ============
    * 一页四格，4.5 秒自动播完，然后停住等她点。
@@ -393,7 +459,7 @@ HKR.config = HKR.config || {};
     /* 顶部那行：和正文的「第 N 步 / 共 10 步」用同一套排版，只是内容换成这一屏自己的 */
     stepLabel: '场景',
     countLabel: '约 5 秒',
-    subtitle: '没有 AI 的时候',
+    subtitle: '没有AI酒店管家，节假日高峰期时',
     /* 旁白录音位：四个音效全部放完之后，再播这一段人声。
      * 现在先空着（不播任何东西）。录音录好后：
      *   1) 文件放到 assets/audio/fl-comic-narration.mp3
@@ -409,22 +475,24 @@ HKR.config = HKR.config || {};
       {
         shape: 'wide',
         src: 'assets/images/comic/fl-comic-1.webp',
-        alt: '走廊里，她一手举着话筒、一手抱着工单，肩上还夹着一部手机。',
-        onoma: '叮铃铃铃！！',
-        x: 4,
-        y: 8,
-        rot: -8,
-        size: 'lg'
+        alt: '她推着清洁车，腋下夹着一瓶水、手里托着浴巾，对讲机里又来了一条 301 房的需求。',
+        /* 和第③格同一种描边文字（白字 + 深蓝描边），\n 是换行 */
+        onoma: '301房间需要浴巾',
+        x: 7,
+        y: 13,
+        rot: -4,
+        size: 'sub'
       },
       {
         shape: 'small',
         src: 'assets/images/comic/fl-comic-2.webp',
-        alt: '她抱着水和拖鞋在走廊里小跑。',
-        onoma: '咚咚咚…',
-        x: 52,
-        y: 62,
-        rot: 6,
-        size: 'md'
+        alt: '她挠着后脑勺，拖鞋还留在清洁车上没拿。',
+        /* 第②格：她挠头、拖鞋还留在车上 */
+        onoma: '这是哪间来着？',
+        x: 3,
+        y: 74,
+        rot: -3,
+        size: 'sub'
       },
       {
         shape: 'small',
@@ -436,8 +504,8 @@ HKR.config = HKR.config || {};
         y: 16,
         rot: -3,
         size: 'sm',
-        /* 客人那句「我不要这个…」挪到画面左上角，当旁白式的一句 */
-        extra: { text: '我不要这个…', x: 4, y: 74, rot: -3 }
+        /* 客人的台词：点明他要的是水，她却递了拖鞋 */
+        extra: { text: '我要的是水', x: 4, y: 74, rot: -3 }
       },
       {
         shape: 'banner',
@@ -467,11 +535,22 @@ HKR.config = HKR.config || {};
     screens: screens,
     quizIntro: quizIntro,
     quiz: {
-      passCorrect: 2,
+      /* 通过规则：答对 4 题 —— A 组 2 题 + B 组 1 题 + C 组 1 题 */
+      passCorrect: 4,
+      passGroups: { A: 2, B: 1, C: 1 },
+      groupLabels: { A: '读工单', B: '流程顺序', C: '前置条件' },
+      /* 第一轮怎么组卷：A 抽 1 张票的 2 题（同票连问），B / C 各随机 1 道 */
+      paper: [
+        { group: 'A', count: 2, perTicket: true },
+        { group: 'B', count: 1 },
+        { group: 'C', count: 1 }
+      ],
       questions: quizQuestions
     }
   };
 })();
+
+
 
 
 

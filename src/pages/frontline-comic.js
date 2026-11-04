@@ -1,4 +1,4 @@
-/* 一线版 · 开场漫画（落地首屏）
+﻿/* 一线版 · 开场漫画（落地首屏）
  *
  * 一页四格：① 三头六臂接电话（大） ② 抱着东西跑（小） ③ 门口送错（小） ④ 晕头转向（宽）
  * 节奏：空画框先出现 → 逐格从下往上填入 → 每格跟一句拟声词 → 定格等她点。
@@ -39,6 +39,17 @@ HKR.pages = HKR.pages || {};
               esc(panel.extra.text) +
               '</span>'
             : '';
+
+          var onoma = panel.onoma
+            ? '<span class="fl-comic__onoma fl-comic__onoma--' +
+              (panel.size || 'md') +
+              '" style="' +
+              onomaStyle +
+              '">' +
+              esc(panel.onoma).replace(/\n/g, '<br />') +
+              '</span>'
+            : '';
+
           return (
             '<li class="fl-comic__panel fl-comic__panel--' +
             (panel.shape || 'small') +
@@ -50,13 +61,7 @@ HKR.pages = HKR.pages || {};
             '" alt="' +
             esc(panel.alt) +
             '" />' +
-            '<span class="fl-comic__onoma fl-comic__onoma--' +
-            (panel.size || 'md') +
-            '" style="' +
-            onomaStyle +
-            '">' +
-            esc(panel.onoma) +
-            '</span>' +
+            onoma +
             extra +
             '</li>'
           );
@@ -161,3 +166,4 @@ HKR.pages = HKR.pages || {};
     }
   };
 })();
+
