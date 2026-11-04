@@ -95,8 +95,8 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 
 .frontline-scene__caption {
   color: var(--ink);
-  font-size: 19px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.55;
   font-weight: 500;
   text-wrap: pretty;
 }
@@ -1176,20 +1176,25 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   padding: 4px 0 0;
 }
 
 .fl-qr__pair {
   display: grid;
   width: 100%;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: minmax(0, 220px);
   justify-content: center;
 }
 
 .fl-qr__pair.is-pair {
-  grid-template-columns: 1fr 1fr;
+  /* 一屏塞下两张码 + 说明 + 按钮：每张收到 134px 以内 */
+  grid-template-columns: repeat(2, minmax(0, 134px));
+}
+
+.fl-qr__pair.is-pair .fl-qr__card {
+  padding: 7px;
 }
 
 .fl-qr__item {
@@ -1201,8 +1206,8 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 
 .fl-qr__card {
   width: 100%;
-  padding: 10px;
-  border-radius: 14px;
+  padding: 8px;
+  border-radius: 12px;
   background: #fff;
   box-shadow: 0 6px 18px rgba(23, 42, 63, 0.12);
 }
@@ -1233,7 +1238,7 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 }
 
 .fl-qr__hint {
-  font-size: 13.5px;
+  font-size: 12.5px;
   line-height: 1.5;
   color: var(--ink-2);
   text-align: center;
@@ -1251,8 +1256,8 @@ body[data-track='frontline']:not([data-page='frontline']) .view {
 .fl-qr__note {
   margin: 0;
   color: var(--ink);
-  font-size: 19px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.55;
   font-weight: 500;
   text-wrap: pretty;
 }
