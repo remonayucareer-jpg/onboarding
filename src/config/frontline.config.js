@@ -447,7 +447,7 @@ HKR.config = HKR.config || {};
    */
   var cover = {
     /* 开屏页直接用设计稿那张图（780×1688 = 390×844 @2x），换图只改这一行 */
-    poster: 'assets/images/start-page/start-cover.png',
+    poster: 'assets/images/start-page/start-cover.png?v=20261104',
     posterAlt: '一线员工预习材料：10 个学习画面，6 分钟看完，答对 4 题就能通过。',
     nextPageId: 'frontline-comic'  };
   /* ============ 开场漫画（落地首屏） ============
@@ -474,7 +474,7 @@ HKR.config = HKR.config || {};
     panels: [
       {
         shape: 'wide',
-        src: 'assets/images/comic/fl-comic-1.webp',
+        src: 'assets/images/comic/fl-comic-1.webp?v=20261104',
         alt: '她推着清洁车，腋下夹着一瓶水、手里托着浴巾，对讲机里又来了一条 301 房的需求。',
         /* 和第③格同一种描边文字（白字 + 深蓝描边），\n 是换行 */
         onoma: '301房间需要浴巾',
@@ -485,7 +485,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'small',
-        src: 'assets/images/comic/fl-comic-2.webp',
+        src: 'assets/images/comic/fl-comic-2.webp?v=20261104',
         alt: '她挠着后脑勺，拖鞋还留在清洁车上没拿。',
         /* 第②格：她挠头、拖鞋还留在车上 */
         onoma: '这是哪间来着？',
@@ -496,7 +496,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'small',
-        src: 'assets/images/comic/fl-comic-3.webp',
+        src: 'assets/images/comic/fl-comic-3.webp?v=20261104',
         alt: '客房门打开，客人一脸困惑，她站在门外有些不好意思。',
         /* 空泡泡里放她的一声「啊？」：泡泡中心约 (53%, 16%) */
         onoma: '啊？',
@@ -509,7 +509,7 @@ HKR.config = HKR.config || {};
       },
       {
         shape: 'banner',
-        src: 'assets/images/comic/fl-comic-4.webp',
+        src: 'assets/images/comic/fl-comic-4.webp?v=20261104',
         alt: '她扶着额头，眼睛打转，怀里东西快掉了。',
         onoma: '晕……',
         x: 78,
